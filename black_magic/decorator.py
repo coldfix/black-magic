@@ -8,8 +8,9 @@ decorators.
 __all__ = [
     'getfull_argspec',
     'decompile_argspec',
+    'param_names',
+    'Scope',
     'wraps',
-    'function_signature',
     'function_decorator',
 ]
 
