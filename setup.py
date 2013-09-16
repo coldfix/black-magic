@@ -5,7 +5,7 @@ from distutils.spawn import find_executable
 # Generate .rst document for PyPI
 try:
     from pypandoc import convert
-    convert('README.md', 'rst')
+    long_description = convert('README.md', 'rst')
     with open('README.rst', 'wt') as f:
         f.write(long_description)
 except ImportError:
