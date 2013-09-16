@@ -1,3 +1,7 @@
+# local garbage
+README.rst
+
+# Python binaries
 *.py[cod]
 
 # C extensions
