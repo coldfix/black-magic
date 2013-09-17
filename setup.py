@@ -1,14 +1,15 @@
+#!/usr/bin/env python
 # encoding: utf-8
+
 from distutils.core import setup
 from distutils.spawn import find_executable
 
-# Generate .rst document for PyPI
+# read long_description from README.rst
 try:
-    from pypandoc import convert
-    long_description = convert('README.md', 'rst')
-    with open('README.rst', 'wt') as f:
-        f.write(long_description)
-except ImportError:
+    f = open('README.rst')
+    long_description = f.read()
+    f.close()
+except:
     long_description = None
 
 # invoke distutils
