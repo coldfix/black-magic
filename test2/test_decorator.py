@@ -7,13 +7,12 @@ Currently, the only available tests are for decompile_argspec.
 """
 
 import unittest
-from black_magic import decorator
-from black_magic.decorator import getfullargspec
+from black_magic.decorator import getfullargspec, decompile_argspec
 
 
 def recompile(fn):
     spec = getfullargspec(fn)
-    sig,call,ctx = decorator.decompile_argspec(spec, '_')
+    sig,call,ctx = decompile_argspec(spec, '_')
     expr = 'lambda %s: 1+fn(%s)' % (sig,call)
     ctx['fn'] = fn
     return eval(expr, ctx), expr

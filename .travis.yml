@@ -7,6 +7,7 @@ python:
   - "pypy"
 install:
   - sudo apt-get install -qy pandoc
-  - pip install . --use-mirrors
+  - python setup.py sdist
+  - pip install $(ls ./dist/*.tar.gz | sort -rV | head -n1)
 script:
   - nosetests

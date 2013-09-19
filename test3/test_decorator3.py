@@ -4,7 +4,6 @@ Python3 unit tests for black_magic.decorator
 """
 
 import unittest
-from black_magic import decorator
 import test_decorator
 
 class test_decompile_argspec(test_decorator.test_decompile_argspec):
