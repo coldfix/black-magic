@@ -6,7 +6,7 @@ decorators.
 
 """
 __all__ = [
-    'getfull_argspec',
+    'getfullargspec',
     'decompile_argspec',
     'param_names',
     'Scope',
@@ -80,8 +80,8 @@ def decompile_argspec(argspec, defparam_name):
     call_params += argspec.args[:num_required]
 
     # positional arguments with defaults:
-    for k,v in zip(argspec.args[num_required:], defaults):
-        add_param("%s=%s" % (k, set_value(v)), k)
+    for arg,val in zip(argspec.args[num_required:], defaults):
+        add_param("%s=%s" % (arg, set_value(val)), arg)
 
     # add varargs:
     if argspec.varargs:
@@ -93,11 +93,12 @@ def decompile_argspec(argspec, defparam_name):
     # now add keyword-only arguments (this is specific to python3)
     for kwonlyarg in argspec.kwonlyargs:
         if kwonlyarg in argspec.kwonlydefaults:
-            k, v = kwonlyarg, argspec.kwonlydefaults[kwonlyarg]
-            add_param("%s=%s" % (k, set_value(v)),
-                      "%s=%s" % (k, k))
+            val = argspec.kwonlydefaults[kwonlyarg]
+            add_param("%s=%s" % (kwonlyarg, set_value(val)),
+                      "%s=%s" % (kwonlyarg, kwonlyarg))
         else:
-            add_param(k, k)
+            add_param(kwonlyarg,
+                      "%s=%s" % (kwonlyarg, kwonlyarg))
 
     # and finally the keyword arguments
     if argspec.varkw is not None:
