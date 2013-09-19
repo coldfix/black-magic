@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-from distutils.core import setup
+from setuptools import setup
 from distutils.spawn import find_executable
 
 # read long_description from README.rst
@@ -32,5 +32,6 @@ setup(
         'Topic :: Software Development',
         'License :: CC0 1.0 Universal (CC0 1.0) Public Domain Dedication',
     ],
+    test_suite='nose.collector'
 )
 
