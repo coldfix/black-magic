@@ -225,9 +225,8 @@ def wraps(function, wrapper=None):
             returns=None
             )
         ])
-    add_line_info(this_is_real_cool)
     it_should_be_forbidden = compile(
-            source=this_is_real_cool,
+            source=ast.fix_missing_locations(this_is_real_cool),
             filename='<string>', # TODO: 'd be cool to show original file
             mode='exec',
             )
