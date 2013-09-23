@@ -186,6 +186,9 @@ def wraps(function, wrapper=None):
     never_do_this_at_home = 'lambda %s: %s(%s)' % (sig, wrapper_name, call)
     it_is_evil = eval(never_do_this_at_home, ctx)
 
+    if hasattr(function, '__annotations__'):
+        it_is_evil.__annotations__ = function.__annotations__
+
     # call update wrapper to copy standard attributes
     return functools.update_wrapper(it_is_evil, function)
 
@@ -208,6 +211,9 @@ def function_decorator(decorator):
     """
     def decorate(function):
         return wraps(function, decorator(function))
+
+    if hasattr(function, '__annotations__'):
+        decorate.__annotations__ = function.__annotations__
 
     return functools.update_wrapper(decorate, decorator)
 
