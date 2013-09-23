@@ -17,6 +17,7 @@ __all__ = [
 
 import functools
 import ast
+import inspect
 
 try:
     from inspect import getfullargspec
@@ -225,9 +226,16 @@ def wraps(function, wrapper=None):
             returns=None
             )
         ])
+
+    try:
+        filename = '<wraps(%s:%s)>' %
+                (inspect.getsourcefile(function), function.__name__)
+    except TypeError:
+        filename = '<wraps(:%s)>' % function.__name__
+
     it_should_be_forbidden = compile(
             source=ast.fix_missing_locations(this_is_real_cool),
-            filename='<string>', # TODO: 'd be cool to show original file
+            filename=filename,
             mode='exec',
             )
     exec(it_should_be_forbidden, ctx)
