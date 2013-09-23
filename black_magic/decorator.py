@@ -212,8 +212,8 @@ def function_decorator(decorator):
     def decorate(function):
         return wraps(function, decorator(function))
 
-    if hasattr(function, '__annotations__'):
-        decorate.__annotations__ = function.__annotations__
+    if hasattr(decorator, '__annotations__'):
+        decorate.__annotations__ = decorator.__annotations__
 
     return functools.update_wrapper(decorate, decorator)
 
