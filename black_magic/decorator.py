@@ -6,7 +6,6 @@ decorators.
 
 """
 __all__ = [
-    'getfullargspec',
     'decompile_argspec',
     'param_names',
     'Scope',
@@ -15,27 +14,7 @@ __all__ = [
 ]
 
 import functools
-
-try:
-    from inspect import getfullargspec
-except ImportError:
-    from inspect import getargspec
-    from collections import namedtuple
-
-    # replacement for getfullargspec (missing in python2)
-    fullargspec = namedtuple(
-            'FullArgSpec', [
-                'args', 'varargs',
-                'varkw', 'defaults',
-                'kwonlyargs', 'kwonlydefaults',
-                'annotations'])
-    def getfullargspec(fn):
-        spec = getargspec(fn)
-        return fullargspec(
-            args=spec.args, varargs=spec.varargs,
-            varkw=spec.keywords, defaults=spec.defaults,
-            kwonlyargs=[], kwonlydefaults=None,
-            annotations={})
+from .compat import getfullargspec
 
 
 def decompile_argspec(argspec, defparam_name):

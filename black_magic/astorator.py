@@ -5,8 +5,9 @@ This is intented to be a utility for signature preserving function
 decorators.
 
 """
+from __future__ import absolute_import
+
 __all__ = [
-    'getfullargspec',
     'decompile_argspec',
     'param_names',
     'Scope',
@@ -18,64 +19,8 @@ __all__ = [
 import functools
 import ast
 import inspect
+from .compat import *
 
-
-try:
-    from inspect import getfullargspec
-except ImportError:
-    from inspect import getargspec
-    from collections import namedtuple
-
-    # replacement for getfullargspec (missing in python2)
-    fullargspec = namedtuple(
-            'FullArgSpec', [
-                'args', 'varargs',
-                'varkw', 'defaults',
-                'kwonlyargs', 'kwonlydefaults',
-                'annotations'])
-    def getfullargspec(fn):
-        spec = getargspec(fn)
-        return fullargspec(
-            args=spec.args, varargs=spec.varargs,
-            varkw=spec.keywords, defaults=spec.defaults,
-            kwonlyargs=[], kwonlydefaults=None,
-            annotations={})
-
-# Python3 ast.arg does not exist in python2 as it has no annotations and
-# therefore no need for this extra type. So let's create a simple
-# replacement:
-try:
-    from ast import arg as param
-except ImportError:
-    def param(arg, annotation):
-        return ast.Name(id=arg, ctx=ast.Param())
-
-def exec_compat(expression, globals, locals=None):
-    """
-    Compatibility exec function for python2 and python3.
-
-    The python2 exec() statement is bound to the following restriction:
-
-        If exec is used in a function and the function contains a nested
-        block with free variables, the compiler will raise a SyntaxError
-        unless the exec explicitly specifies the local namespace for the
-        exec. (In  other words, "exec  obj" would be illegal,  but "exec
-        obj in ns" would be legal.)
-
-        http://www.python.org/dev/peps/pep-0227/
-
-    It seems the 3-tuple form of the exec-statement is not recognized as
-    explicitly  specifying the  local namespace  therefore creating  the
-    need to call it from an intermediate function without nested scope.
-
-    The  3-tuple   form  of   the  exec   statement  is   mandatory  for
-    compatibility between python2 and python3.
-
-    http://docs.python.org/2/reference/simple_stmts.html#the-exec-statement
-    http://docs.python.org/3.3/library/functions.html?highlight=exec#exec
-
-    """
-    exec(expression, globals, locals)
 
 def decompile_argspec(argspec, defparam_name):
     """
