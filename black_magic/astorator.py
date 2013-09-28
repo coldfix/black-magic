@@ -228,8 +228,7 @@ def wraps(function, wrapper=None):
         ])
 
     try:
-        filename = '<wraps(%s:%s)>' %
-                (inspect.getsourcefile(function), function.__name__)
+        filename = '<wraps(%s:%s)>' % (inspect.getsourcefile(function), function.__name__)
     except TypeError:
         filename = '<wraps(:%s)>' % function.__name__
 
