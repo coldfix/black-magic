@@ -5,17 +5,17 @@ Provides replacements for python3 functions for a consistent interface on
 both languages.
 
 """
-__all__ = ['getfullargspec', 'param', 'exec_compat']
+__all__ = ['getfullargspec', 'FullArgSpec', 'ast_arg', 'exec_compat']
 
 
 # Python2 has no annotations and kwonly arguments, therefore we need to
 # create a version of getargspec that returns dummy variables
 try:
-    from inspect import getfullargspec
+    from inspect import getfullargspec, FullArgSpec
 except ImportError:
     from inspect import getargspec
     from collections import namedtuple
-    fullargspec = namedtuple(
+    FullArgSpec = namedtuple(
             'FullArgSpec', [
                 'args', 'varargs',
                 'varkw', 'defaults',
@@ -34,10 +34,10 @@ except ImportError:
 # therefore no need for this extra type. So let's create a simple
 # replacement:
 try:
-    from ast import arg as param
+    from ast import arg as ast_arg
 except ImportError:
     import ast
-    def param(arg, annotation):
+    def ast_arg(arg, annotation):
         return ast.Name(id=arg, ctx=ast.Param())
 
 

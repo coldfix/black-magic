@@ -7,14 +7,13 @@ decorators.
 """
 __all__ = [
     'decompile_argspec',
-    'param_names',
-    'Scope',
     'wraps',
     'function_decorator',
 ]
 
 import functools
 from .compat import getfullargspec
+from .signature import param_names, Scope
 
 
 def decompile_argspec(argspec, defparam_name):
@@ -87,38 +86,6 @@ def decompile_argspec(argspec, defparam_name):
     decl = ", ".join(decl_params)
     call = ", ".join(call_params)
     return decl, call, ctx
-
-def param_names(argspec):
-    """
-    Iterate over all parameter names used in the argspec.
-    """
-    for argname in argspec.args:
-        yield argname
-    if argspec.varargs:
-        yield argspec.varargs
-    if argspec.kwonlyargs:
-        for argname in argspec.kwonlyargs:
-            yield argname
-    if argspec.varkw:
-        for argname in argspec.varkw:
-            yield argname
-
-class Scope:
-    """
-    Keeps track of used names in a particular scope.
-    """
-    def __init__(self, iterable):
-        self.names = [iterable]
-
-    """
-    Generate a new name that is not present in the scope.
-    """
-    def new(self):
-        name = '_'
-        while name in self.names:
-            name += '_'
-        self.names.append(name)
-        return name
 
 
 def wraps(function, wrapper=None):

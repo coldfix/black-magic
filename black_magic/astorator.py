@@ -9,8 +9,6 @@ from __future__ import absolute_import
 
 __all__ = [
     'decompile_argspec',
-    'param_names',
-    'Scope',
     'add_line_info',
     'wraps',
     'function_decorator',
@@ -19,7 +17,8 @@ __all__ = [
 import functools
 import ast
 import inspect
-from .compat import *
+from .compat import getfullargspec, ast_arg, exec_compat
+from .signature import param_names, Scope
 
 
 def decompile_argspec(argspec, defparam_name):
@@ -58,7 +57,7 @@ def decompile_argspec(argspec, defparam_name):
     # Add positional parameters and their defaults:
     sig = ast.arguments(
             # positional parameters
-            args=[param(arg=arg, annotation=annot.get(arg))
+            args=[ast_arg(arg=arg, annotation=annot.get(arg))
                 for arg in (argspec.args or [])],
             defaults=[set_value(val)
                 for val in (argspec.defaults or [])],
@@ -69,7 +68,7 @@ def decompile_argspec(argspec, defparam_name):
             kwarg=argspec.varkw,
             kwargannotation=annot.get(argspec.varkw),
             # keyword-only arguments
-            kwonlyargs=[param(arg=arg, annotation=annot.get(arg))
+            kwonlyargs=[ast_arg(arg=arg, annotation=annot.get(arg))
                 for arg in (argspec.kwonlyargs or [])],
             kw_defaults=[set_value(argspec.kwonlydefaults[arg])
                 for arg in (argspec.kwonlyargs or [])],
@@ -88,38 +87,6 @@ def decompile_argspec(argspec, defparam_name):
         )
     return sig, call, ctx
 
-
-def param_names(argspec):
-    """
-    Iterate over all parameter names used in the argspec.
-    """
-    for argname in argspec.args:
-        yield argname
-    if argspec.varargs:
-        yield argspec.varargs
-    if argspec.kwonlyargs:
-        for argname in argspec.kwonlyargs:
-            yield argname
-    if argspec.varkw:
-        for argname in argspec.varkw:
-            yield argname
-
-class Scope:
-    """
-    Keeps track of used names in a particular scope.
-    """
-    def __init__(self, iterable):
-        self.names = [iterable]
-
-    """
-    Generate a new name that is not present in the scope.
-    """
-    def new(self):
-        name = '_'
-        while name in self.names:
-            name += '_'
-        self.names.append(name)
-        return name
 
 
 def add_line_info(node, lineno = 1, col_offset = 0):
