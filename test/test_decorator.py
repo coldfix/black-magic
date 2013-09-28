@@ -10,14 +10,6 @@ import unittest
 from black_magic.decorator import getfullargspec, decompile_argspec
 
 
-def recompile(fn):
-    spec = getfullargspec(fn)
-    sig,call,ctx = decompile_argspec(spec, '_')
-    expr = 'lambda %s: 1+fn(%s)' % (sig,call)
-    ctx['fn'] = fn
-    return eval(expr, ctx), expr
-
-
 class test_decompile_argspec(unittest.TestCase):
     def setUp(self):
         self.sample_fns = dict(
@@ -39,20 +31,23 @@ class test_decompile_argspec(unittest.TestCase):
                         ([],{'a':1,'b':2,'kw':4}) ]
             )
 
-    def test_success(self):
+    def recompile(self, fn):
+        spec = getfullargspec(fn)
+        sig,call,ctx = decompile_argspec(spec, '_')
+        expr = 'lambda %s: 1+fn(%s)' % (sig,call)
+        ctx['fn'] = fn
+        return eval(expr, ctx)
+
+    def test_argspec(self):
         for case in self.sample_fns:
-            print("Running: ", case)
-
-            # decompile and recompile expression
             fn = self.sample_fns[case]
-            fake,s = recompile(fn)
-            print("Compiled to: %s" % s)
-
-            # compare argspec
+            fake = self.recompile(fn)
             assert getfullargspec(fake) == getfullargspec(fn), "for %s()" % case
 
-            # compare results
+    def test_return_value(self):
+        for case in self.sample_fns:
+            fn = self.sample_fns[case]
+            fake = self.recompile(fn)
             for args,kwargs in self.sample_args[case]:
-                print("Calling: %s(%r, %r)" %(case, args, kwargs))
                 assert fake(*args, **kwargs) == 1 + fn(*args,**kwargs), 'While calling %s(*%r, **%r)' % (case, args, kwargs)
 
