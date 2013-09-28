@@ -19,6 +19,7 @@ import functools
 import ast
 import inspect
 
+
 try:
     from inspect import getfullargspec
 except ImportError:
@@ -40,6 +41,41 @@ except ImportError:
             kwonlyargs=[], kwonlydefaults=None,
             annotations={})
 
+# Python3 ast.arg does not exist in python2 as it has no annotations and
+# therefore no need for this extra type. So let's create a simple
+# replacement:
+try:
+    from ast import arg as param
+except ImportError:
+    def param(arg, annotation):
+        return ast.Name(id=arg, ctx=ast.Param())
+
+def exec_compat(expression, globals, locals=None):
+    """
+    Compatibility exec function for python2 and python3.
+
+    The python2 exec() statement is bound to the following restriction:
+
+        If exec is used in a function and the function contains a nested
+        block with free variables, the compiler will raise a SyntaxError
+        unless the exec explicitly specifies the local namespace for the
+        exec. (In  other words, "exec  obj" would be illegal,  but "exec
+        obj in ns" would be legal.)
+
+        http://www.python.org/dev/peps/pep-0227/
+
+    It seems the 3-tuple form of the exec-statement is not recognized as
+    explicitly  specifying the  local namespace  therefore creating  the
+    need to call it from an intermediate function without nested scope.
+
+    The  3-tuple   form  of   the  exec   statement  is   mandatory  for
+    compatibility between python2 and python3.
+
+    http://docs.python.org/2/reference/simple_stmts.html#the-exec-statement
+    http://docs.python.org/3.3/library/functions.html?highlight=exec#exec
+
+    """
+    exec(expression, globals, locals)
 
 def decompile_argspec(argspec, defparam_name):
     """
@@ -77,7 +113,7 @@ def decompile_argspec(argspec, defparam_name):
     # Add positional parameters and their defaults:
     sig = ast.arguments(
             # positional parameters
-            args=[ast.arg(arg=arg, annotation=annot.get(arg))
+            args=[param(arg=arg, annotation=annot.get(arg))
                 for arg in (argspec.args or [])],
             defaults=[set_value(val)
                 for val in (argspec.defaults or [])],
@@ -88,7 +124,7 @@ def decompile_argspec(argspec, defparam_name):
             kwarg=argspec.varkw,
             kwargannotation=annot.get(argspec.varkw),
             # keyword-only arguments
-            kwonlyargs=[ast.arg(arg=arg, annotation=annot.get(arg))
+            kwonlyargs=[param(arg=arg, annotation=annot.get(arg))
                 for arg in (argspec.kwonlyargs or [])],
             kw_defaults=[set_value(argspec.kwonlydefaults[arg])
                 for arg in (argspec.kwonlyargs or [])],
@@ -235,12 +271,12 @@ def wraps(function, wrapper=None):
     it_should_be_forbidden = compile(
             source=ast.fix_missing_locations(this_is_real_cool),
             filename=filename,
-            mode='exec',
-            )
-    exec(it_should_be_forbidden, ctx)
+            mode='exec',)
+    loc = {}
+    exec_compat(it_should_be_forbidden, ctx, loc)
 
     # call update wrapper to copy standard attributes
-    return functools.update_wrapper(ctx[fun_name], function)
+    return functools.update_wrapper(loc[fun_name], function)
 
 
 def function_decorator(decorator):
