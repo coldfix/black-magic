@@ -22,8 +22,8 @@ setup(
     author_email='t_glaessle@gmx.de',
     url='https://github.com/coldfix/black-magic',
     license='Public Domain',
-    packages=[
-        'black_magic',],
+    packages=['black_magic'],
+    install_requires=['funcsigs'],
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',

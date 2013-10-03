@@ -13,7 +13,7 @@ __all__ = [
 
 import functools
 from .compat import getfullargspec
-from .signature import param_names, Scope
+from .common import param_names, Scope
 
 
 def decompile_argspec(argspec, defparam_name):
@@ -122,10 +122,10 @@ def wraps(function, wrapper=None):
     # generate signature and call expressions
     argspec = getfullargspec(function)
     scope = Scope(param_names(argspec))
-    sig, call, ctx = decompile_argspec(argspec, scope.new())
+    sig, call, ctx = decompile_argspec(argspec, scope.reserve('_'))
 
     # add the wrapped function to the scope
-    wrapper_name = scope.new()
+    wrapper_name = scope.reserve('_call')
     ctx[wrapper_name] = wrapper
 
     # generate and evaluate the complete expression

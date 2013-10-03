@@ -1,3 +1,4 @@
+# encoding: utf-8
 """
 Compatibility wrappers for python2.
 
@@ -23,11 +24,18 @@ except ImportError:
                 'annotations'])
     def getfullargspec(fn):
         spec = getargspec(fn)
-        return fullargspec(
+        return FullArgSpec(
             args=spec.args, varargs=spec.varargs,
             varkw=spec.keywords, defaults=spec.defaults,
             kwonlyargs=[], kwonlydefaults=None,
             annotations={})
+
+# Python3 introduces the new inspect.Signature type which is much easier to
+# work with than FullArgSpec.
+try:
+    from inspect import signature, Signature, Parameter, BoundArguments
+except ImportError:
+    from funcsigs import signature, Signature, Parameter, BoundArguments
 
 
 # Python3 ast.arg does not exist in python2 as it has no annotations and
@@ -67,4 +75,16 @@ def exec_compat(expression, globals, locals=None):
 
     """
     exec(expression, globals, locals)
+
+
+# Python3 allows unicode characters as identifiers while python2 does not:
+import re
+try:
+    exec("ä=0", {})
+    _identifier_regex = re.compile(r"^[^\d\W]\w*\Z", re.UNICODE)
+except SyntaxError:
+    _identifier_regex = re.compile(r"^[^\d\W]\w*\Z")
+
+def is_identifier(name):
+    return _identifier_regex.match(name) is not None
 

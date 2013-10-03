@@ -19,15 +19,14 @@ class Scope:
     Keeps track of used names in a particular scope.
     """
     def __init__(self, iterable):
-        self.names = [iterable]
+        self.names = set(iterable)
 
     """
     Generate a new name that is not present in the scope.
     """
-    def new(self):
-        name = '_'
+    def reserve(self, name):
         while name in self.names:
             name += '_'
-        self.names.append(name)
+        self.names.add(name)
         return name
 
