@@ -268,8 +268,8 @@ def value(val):
     >>> def real(a, b = 1, *args, **kwargs):
     ...     return None
     >>> fake = wraps(real)(value(2.2))
-    >>> fake(0)
-    2.2
+    >>> fake(0) == 2.2
+    True
 
     >>> fake = wraps(real)(value("Hello world!"))
     >>> fake(a=0)
