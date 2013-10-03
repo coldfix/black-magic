@@ -7,7 +7,11 @@ decorators.
 """
 from __future__ import absolute_import
 
-__all__ = ['ASTorator']
+__all__ = [
+    'ASTorator',
+    'wraps',
+    'decorator'
+]
 
 import ast
 import inspect
@@ -105,8 +109,7 @@ class ASTorator(object):
                 call.keywords.append(ast.keyword(
                     arg=param.name,
                     value=ast.Name(id=param.name, ctx=ast.Load())))
-                if hasattr(param, 'default'):
-                    sig.kw_defaults.append(attr(param, 'default'))
+                sig.kw_defaults.append(attr(param, 'default'))
 
             # varargs
             elif param.kind == param.VAR_POSITIONAL:
@@ -225,8 +228,8 @@ def decorator(decorator):
     >>> assert fake(4) == 5
 
     """
+    @wraps(decorator)
     def decorate(function):
         return wraps(function, decorator(function))
-
-    return functools.update_wrapper(decorate, decorator)
+    return decorate
 
