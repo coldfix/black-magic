@@ -50,7 +50,7 @@ This will not only update the docstring of the fake function to look like
 the original but generate a wrapper function that has *exactly* the same
 signature:
 
-```
+```python
 >>> assert fake(1) is x   # check object-identity of default-parameter!
 Fake!
 
