@@ -6,7 +6,7 @@ Python3 unit tests for black_magic.decorator
 import unittest
 import test.test_decorator
 
-class test_decompile_argspec(test.test_decorator.test_decompile_argspec):
+class TestASTorator(test.test_decorator.TestASTorator):
 
     def setUp(self):
         self.sample_fns = dict(

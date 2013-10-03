@@ -7,10 +7,11 @@ Currently, the only available tests are for decompile_argspec.
 """
 
 import unittest
-from black_magic.decorator import getfullargspec, decompile_argspec
+from black_magic.decorator import wraps
+from black_magic.compat import getfullargspec
 
 
-class test_decompile_argspec(unittest.TestCase):
+class TestASTorator(unittest.TestCase):
     def setUp(self):
         self.sample_fns = dict(
                 no_args  = lambda: 0,
@@ -31,23 +32,16 @@ class test_decompile_argspec(unittest.TestCase):
                         ([],{'a':1,'b':2,'kw':4}) ]
             )
 
-    def recompile(self, fn):
-        spec = getfullargspec(fn)
-        sig,call,ctx = decompile_argspec(spec, '_')
-        expr = 'lambda %s: 1+fn(%s)' % (sig,call)
-        ctx['fn'] = fn
-        return eval(expr, ctx)
-
     def test_argspec(self):
         for case in self.sample_fns:
             fn = self.sample_fns[case]
-            fake = self.recompile(fn)
+            fake = wraps(fn)(lambda *args,**kwargs: 1+fn(*args, **kwargs))
             assert getfullargspec(fake) == getfullargspec(fn), "for %s()" % case
 
     def test_return_value(self):
         for case in self.sample_fns:
             fn = self.sample_fns[case]
-            fake = self.recompile(fn)
+            fake = wraps(fn)(lambda *args,**kwargs: 1+fn(*args, **kwargs))
             for args,kwargs in self.sample_args[case]:
                 assert fake(*args, **kwargs) == 1 + fn(*args,**kwargs), 'While calling %s(*%r, **%r)' % (case, args, kwargs)
 
