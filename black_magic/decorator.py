@@ -78,7 +78,6 @@ class ASTorator(object):
             else:
                 return None
 
-        params = list(self.signature.parameters.values())
         sig = ast.arguments(
             args=[],
             vararg=None,
