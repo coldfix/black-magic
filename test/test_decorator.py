@@ -24,12 +24,17 @@ class Util(object):
                          self.fake(*args, **kwargs))
 
     def must_fail(self, *args, **kwargs):
-        try:
-            self.fake(*args, **kwargs)
-        except TypeError:
-            pass
-        else:
-            assert False
+        self.assertRaises(TypeError, self.fake, *args, **kwargs)
+
+    def assertIs(self, expr1, expr2):
+        """Replacement for missing unittest.assertIs in python2.6."""
+        if expr1 is not expr2:
+            self.fail('%s is not %s' % (repr(expr1), repr(expr2)))
+
+    def assertIsNot(self, expr1, expr2):
+        """Replacement for missing unittest.assertIs in python2.6."""
+        if expr1 is expr2:
+            self.fail('%s is %s' % (repr(expr1), repr(expr2)))
 
 def hd(d):
     """Get hashable form of dictionary."""
