@@ -14,18 +14,20 @@ __all__ = [
 ]
 
 import ast
-import inspect
-import functools
+from inspect import getsourcefile
+from functools import update_wrapper
+from types import FunctionType
 
 from .compat import signature, ast_arg, exec_compat, is_identifier
 from .common import Scope
+
 
 
 class ASTorator(object):
     """
     Decorates wapper functions with a given function signature.
 
-    Uses AST not eval.
+    Uses abstract syntax trees for dynamic code generation.
 
     """
     def __init__(self, signature, funcname=None, filename=None):
@@ -36,7 +38,7 @@ class ASTorator(object):
     @classmethod
     def from_function(cls, function):
         try:
-            filename = inspect.getsourcefile(function)
+            filename = getsourcefile(function)
         except:
             filename = None
         if is_identifier(function.__name__):
@@ -48,6 +50,9 @@ class ASTorator(object):
     def decorate(self, callback):
         """
         Create wrapper that calls function with all its arguments.
+
+        The callback may be a function, lambda or any ast.expr.
+
         """
         # TODO: check whether the callback has compatible signature
 
@@ -56,7 +61,6 @@ class ASTorator(object):
 
         filename = '<wraps(%s:%s)>' % (self.filename or '?', self.funcname)
         callback_name = scope.reserve('_call')
-        context[callback_name] = callback
 
         # Add a value to the context
         empty = self.signature.empty
@@ -133,6 +137,19 @@ class ASTorator(object):
         else:
             returns = None
 
+        # Functions just get called:
+        if isinstance(callback, FunctionType):
+            context[callback_name] = callback
+
+        # THIS IS SOMEWHAT DANGEROUS, BUT ALSO REALLY COOL:
+        elif isinstance(callback, ast.expr):
+            call = callback
+
+        # custom expression generator
+        else:
+            context[callback_name] = callback.value
+            call = callback.ast(callback_name)
+
         # generate and evaluate the complete expression
         loc = {}
         if self.funcname is None:
@@ -207,7 +224,7 @@ def wraps(function=None, wrapper=None):
     if function is None:
         return lambda function: wraps(function, wrapper)
 
-    return functools.update_wrapper(
+    return update_wrapper(
         ASTorator.from_function(function)(wrapper),
         function)
 
@@ -232,4 +249,44 @@ def decorator(decorator):
     def decorate(function):
         return wraps(function, decorator(function))
     return decorate
+
+
+
+class Value(object):
+    def __init__(self, value):
+        self.value = value
+
+    def ast(self, value_name):
+        return ast.Name(id=value_name, ctx=ast.Load())
+
+def value(val):
+    """
+    Return a 'callback' value for use with decorate.
+
+    Example:
+
+    >>> def real(a, b = 1, *args, **kwargs):
+    ...     return None
+    >>> fake = wraps(real)(value(2.2))
+    >>> fake(0)
+    2.2
+
+    >>> fake = wraps(real)(value("Hello world!"))
+    >>> fake(a=0)
+    'Hello world!'
+
+    >>> x = []
+    >>> fake = wraps(real)(value(x))
+    >>> assert fake(0) is x
+
+    """
+    t = type(val)
+    if t is int or t is float:
+        return ast.Num(n=val)
+    elif t is str:
+        return ast.Str(s=val)
+    elif t is bytes:
+        return ast.Bytes(s=val)
+    else:
+        return Value(val)
 
