@@ -10,7 +10,9 @@ from __future__ import absolute_import
 __all__ = [
     'ASTorator',
     'wraps',
-    'decorator'
+    'decorator',
+    'value',
+    'flatorator',
 ]
 
 import ast
@@ -250,6 +252,27 @@ def decorator(decorator):
         return wraps(function, decorator(function))
     return decorate
 
+def flatorator(flatorator):
+    """
+    Decorator for flat signature preserving decorators.
+
+    >>> @flatorator
+    ... def fakeit(fn, *args, **kwargs):
+    ...     return 1 + fn(*args, **kwargs)
+
+    >>> @fakeit
+    ... def real(a, b=0):
+    ...     return a + b
+    >>> real(1)
+    2
+
+    """
+    def decorator(fn):
+        @wraps(fn)
+        def wrapper(*args, **kwargs):
+            return flatorator(fn, *args, **kwargs)
+        return wrapper
+    return decorator
 
 
 class Value(object):
