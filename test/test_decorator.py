@@ -6,7 +6,7 @@ __all__ = ['TestASTorator']
 
 import unittest
 from black_magic.decorator import wraps
-from black_magic.compat import getfullargspec, signature
+from black_magic.compat import signature
 
 
 class Util(object):
@@ -15,7 +15,6 @@ class Util(object):
         def fake(*args, **kwargs):
             return ~real(*args, **kwargs)
         self.assertEqual(signature(fake), signature(real))
-        self.assertEqual(getfullargspec(fake), getfullargspec(real))
         self.real = real
         self.fake = fake
 
@@ -127,6 +126,21 @@ class TestASTorator(unittest.TestCase, Util):
         """Test that wrapping works also on a lambda."""
         real = lambda a, b=1, *args, **kwargs: hash((a,b,args,hd(kwargs)))
         self.mutate(real)
+        self.check_result(0)
+        self.check_result(0, 1)
+        self.check_result(0, 1, 2)
+        self.check_result(a=0)
+        self.check_result(a=0, b=1)
+        self.check_result(a=0, b=1, c=1)
+        self.check_result(0, 1, 2, d=1)
+        self.must_fail(b=1)
+        self.must_fail(b=1, c=1)
+
+    def test_instance(self):
+        class Real(object):
+            def __call__(self, a, b=1, *args, **kwargs):
+                return hash((a,b,args,hd(kwargs)))
+        self.mutate(Real())
         self.check_result(0)
         self.check_result(0, 1)
         self.check_result(0, 1, 2)

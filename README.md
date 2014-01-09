@@ -54,8 +54,8 @@ signature:
 >>> assert fake(1) is x   # check object-identity of default-parameter!
 Fake!
 
->>> from inspect import getfullargspec
->>> assert getfullargspec(fake) == getfullargspec(real)
+>>> from inspect import signature
+>>> assert signature(fake) == signature(real)
 ```
 
 If you want to get real crazy you can even use [ast expr](http://docs.python.org/3.3/library/ast.html?highlight=ast#abstract-grammar)s:

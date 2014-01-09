@@ -6,8 +6,11 @@ Provides replacements for python3 functions for a consistent interface on
 both languages.
 
 """
-__all__ = ['getfullargspec', 'FullArgSpec', 'ast_arg', 'exec_compat']
-
+__all__ = ['signature', 'Signature',
+           'getfullargspec', 'FullArgSpec',
+           'ast_arg',
+           'exec_compat',
+           'is_identifier']
 
 # Python2 has no annotations and kwonly arguments, therefore we need to
 # create a version of getargspec that returns dummy variables

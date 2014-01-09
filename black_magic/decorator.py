@@ -43,7 +43,7 @@ class ASTorator(object):
             filename = getsourcefile(function)
         except:
             filename = None
-        if is_identifier(function.__name__):
+        if is_identifier(getattr(function, '__name__', '')):
             funcname = function.__name__
         else:
             funcname = None
@@ -138,18 +138,18 @@ class ASTorator(object):
         else:
             returns = None
 
-        # Functions just get called:
-        if isinstance(callback, FunctionType):
-            context[callback_name] = callback
-
         # THIS IS SOMEWHAT DANGEROUS, BUT ALSO REALLY COOL:
-        elif isinstance(callback, ast.expr):
+        if isinstance(callback, ast.expr):
             call = callback
 
         # custom expression generator
-        else:
+        elif isinstance(callback, Value):
             context[callback_name] = callback.value
             call = callback.ast(callback_name)
+
+        # Functions just get called:
+        else:
+            context[callback_name] = callback
 
         # generate and evaluate the complete expression
         loc = {}
@@ -225,9 +225,13 @@ def wraps(function=None, wrapper=None):
     if function is None:
         return lambda function: wraps(function, wrapper)
 
+    def has(attr):
+        return hasattr(function, attr)
     return update_wrapper(
         ASTorator.from_function(function)(wrapper),
-        function)
+        function,
+        assigned=filter(has, ('__module__', '__name__', '__qualname__',
+                              '__doc__', '__annotations__')))
 
 
 def decorator(decorator):
