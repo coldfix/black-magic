@@ -6,7 +6,7 @@ __all__ = ['TestASTorator']
 
 import unittest
 from black_magic.decorator import wraps
-from black_magic.compat import getfullargspec, signature
+from black_magic.compat import signature
 
 
 class Util(object):
@@ -15,7 +15,6 @@ class Util(object):
         def fake(*args, **kwargs):
             return ~real(*args, **kwargs)
         self.assertEqual(signature(fake), signature(real))
-        self.assertEqual(getfullargspec(fake), getfullargspec(real))
         self.real = real
         self.fake = fake
 
