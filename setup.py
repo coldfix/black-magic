@@ -1,16 +1,14 @@
 #!/usr/bin/env python
 # encoding: utf-8
-
 from setuptools import setup
-from distutils.spawn import find_executable
 
 # read long_description from README.rst
+long_description = None
 try:
-    f = open('README.rst')
-    long_description = f.read()
-    f.close()
-except:
-    long_description = None
+    long_description = open('README.rst').read()
+    long_description += '\n' + open('CHANGES.rst').read()
+except IOError:
+    pass
 
 # invoke distutils
 setup(
