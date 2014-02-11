@@ -6,8 +6,10 @@ python:
   - "3.3"
   - "pypy"
 install:
-  - sudo apt-get install -qy pandoc
+  - pip install coveralls nose
   - python setup.py sdist
   - pip install $(ls ./dist/*.tar.gz | sort -rV | head -n1)
 script:
-  - nosetests
+  - coverage run --source=black_magic setup.py nosetests
+after_success:
+  - coveralls
