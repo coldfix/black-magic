@@ -1,25 +1,12 @@
 black-magic
 -----------
 
-Collection of metaprogramming modules that operate on black magic!
+|Build Status| |Coverage| |Version| |Downloads| |License|
+
+Metaprogramming modules that operate on black magic!
 
 Currently the only available module is:
 
--  ``black_magic.decorator``
-
-License
-~~~~~~~
-
-To the extent possible under law, Thomas Gläßle has waived all copyright
-and related or neighboring rights to black-magic. This work is published
-from: Germany.
-
-To the extent possible under law, the person who associated CC0 with
-black-magic has waived all copyright and related or neighboring rights
-to black-magic.
-
-You should have received a copy of the CC0 legalcode along with this
-work. If not, see http://creativecommons.org/publicdomain/zero/1.0/.
 
 black\_magic.decorator
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -82,10 +69,44 @@ A: No, it uses `abstract syntax trees`_ to do its dynamic code generation.
 .. _abstract syntax trees: http://docs.python.org/3.3/library/ast.html?highlight=ast#ast
 
 Tests
-^^^^^
+~~~~~
 
 This module has been tested to work on python{2.6, 2.7, 3.2, 3.3} and
 PyPy1.9 using `Travis CI`_.
 
 .. _Travis CI: https://travis-ci.org/
 
+License
+~~~~~~~
+
+To the extent possible under law, Thomas Gläßle has waived all copyright
+and related or neighboring rights to black-magic. This work is published
+from: Germany.
+
+To the extent possible under law, the person who associated CC0 with
+black-magic has waived all copyright and related or neighboring rights
+to black-magic.
+
+You should have received a copy of the CC0 legalcode along with this
+work. If not, see http://creativecommons.org/publicdomain/zero/1.0/.
+
+
+.. |Build Status| image:: https://api.travis-ci.org/coldfix/black-magic.png?branch=master
+   :target: https://travis-ci.org/coldfix/black-magic
+   :alt: Build Status
+
+.. |Coverage| image:: https://coveralls.io/repos/coldfix/black-magic/badge.png?branch=master
+   :target: https://coveralls.io/r/coldfix/black-magic
+   :alt: Coverage
+
+.. |Downloads| image:: https://pypip.in/d/black-magic/badge.png
+   :target: https://pypi.python.org/pypi/black-magic/
+   :alt: Downloads
+
+.. |Version| image:: https://pypip.in/v/black-magic/badge.png
+   :target: https://pypi.python.org/pypi/black-magic/
+   :alt: Latest Version
+
+.. |License| image:: https://pypip.in/license/black-magic/badge.png
+   :target: https://pypi.python.org/pypi/black_magic/
+   :alt: License
