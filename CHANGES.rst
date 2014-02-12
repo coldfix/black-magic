@@ -1,6 +1,11 @@
 Changelog
 ~~~~~~~~~
 
+0.0.5
+^^^^^
+
+- add ``black_magic.decorator.partial``
+
 0.0.4
 ^^^^^
 

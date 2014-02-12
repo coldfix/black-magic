@@ -5,7 +5,7 @@ Python2 compatible unit tests for black_magic.decorator
 __all__ = ['TestASTorator']
 
 import unittest
-from black_magic.decorator import wraps
+from black_magic.decorator import wraps, partial
 from black_magic.compat import signature
 
 
@@ -150,4 +150,32 @@ class TestASTorator(unittest.TestCase, Util):
         self.check_result(0, 1, 2, d=1)
         self.must_fail(b=1)
         self.must_fail(b=1, c=1)
+
+    def test_partial(self):
+        def orig0(a, b, c, *args, **kwargs):
+            return hash((a, b, c, args))
+        self.mutate(partial(orig0, 0, a=1))
+        self.check_result(c=2, d=5)
+        self.check_result(2, 3, 4)
+        self.must_fail()
+        self.must_fail(a=0, c=2)
+        self.must_fail(b=1, c=2)
+
+        self.mutate(partial(orig0, 0, 1))
+        self.check_result(2)
+        self.check_result(c=2)
+        self.check_result(2, 3, d=5)
+        self.must_fail()
+        self.must_fail(a=1, c=2)
+
+        def orig1(a, b, c):
+            return hash((a, b, c))
+        self.mutate(partial(orig1, b=1))
+        self.check_result(0, 2)
+        self.check_result(a=0, c=2)
+        self.check_result(0, c=2)
+        self.must_fail()
+        self.must_fail(2, b=2)
+        self.must_fail(0, 2, d=3)
+
 

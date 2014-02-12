@@ -1,11 +1,12 @@
 black-magic
------------
+===========
 
 |Build Status| |Coverage| |Version| |Downloads| |License|
 
 Metaprogramming modules that operate on black magic!
 
-Currently the only available module is:
+Currently there is only one module available. However, I am all open for
+cool ideas.
 
 
 black\_magic.decorator
@@ -20,6 +21,13 @@ duplicated.
 
 Usage
 ^^^^^
+
+This module exports two important functions: ``wraps`` and ``partial``.
+
+
+
+black\_magic.decorator.wraps
+----------------------------
 
 You can use it just like the standard ``functools.wraps`` function:
 
@@ -58,6 +66,50 @@ If you want to get real crazy you can even use ast.expr_'s:
     1
 
 .. _ast.expr: http://docs.python.org/3.3/library/ast.html?highlight=ast#abstract-grammar
+
+
+**WARNING**: Do **NOT** use ``black_magic.decorator.wraps`` with
+``functools.partial``!  It won't work (in most cases).
+
+black\_magic.decorator.partial
+------------------------------
+
+This is similar to the ``functools.partial`` function.
+
+.. code:: python
+
+    >>> from black_magic.decorator import partial
+
+    >>> def real(arg):
+    ...     print(arg)
+    >>> partial(real, arg=0)()
+    0
+
+There are some differences, though:
+
+- this function returs a function object which looks like the input
+  function, except for the modified parameters.
+
+- all overwritten parameters are completely removed from the signature.
+  In functools.partial this is true only for arguments bound by position.
+
+- the ``**kwargs`` are stripped first, then ``*args``
+
+  .. code:: python
+
+      >>> partial(lambda a,b,c: (a,b,c), 2, a=1)(3)
+      (1, 2, 3)
+
+- by leaving the func argument empty it can act as decorator:
+
+  .. code:: python
+
+      >>> @partial(None, bar=0)
+      ... def foo(bar):
+      ...     print(bar)
+      >>> foo()
+      0
+
 
 Under the hood
 ^^^^^^^^^^^^^^

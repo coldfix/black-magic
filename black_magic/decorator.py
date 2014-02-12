@@ -13,16 +13,15 @@ __all__ = [
     'decorator',
     'value',
     'flatorator',
+    'partial',
 ]
 
 import ast
-from inspect import getsourcefile
-from functools import update_wrapper
-from types import FunctionType
+import inspect
+import functools
 
-from .compat import signature, ast_arg, exec_compat, is_identifier
-from .common import Scope
-
+from . import compat
+from . import common
 
 
 class ASTorator(object):
@@ -38,16 +37,18 @@ class ASTorator(object):
         self.filename = filename
 
     @classmethod
-    def from_function(cls, function):
+    def from_function(cls, function, signature=None):
         try:
-            filename = getsourcefile(function)
+            filename = inspect.getsourcefile(function)
         except:
             filename = None
-        if is_identifier(getattr(function, '__name__', '')):
+        if compat.is_identifier(getattr(function, '__name__', '')):
             funcname = function.__name__
         else:
             funcname = None
-        return cls(signature(function), funcname, filename)
+        return cls(signature or compat.signature(function),
+                   funcname,
+                   filename)
 
     def decorate(self, callback):
         """
@@ -58,7 +59,7 @@ class ASTorator(object):
         """
         # TODO: check whether the callback has compatible signature
 
-        scope = Scope(self.signature.parameters.keys())
+        scope = common.Scope(self.signature.parameters.keys())
         context = {'__builtins__': __builtins__}
 
         filename = '<wraps(%s:%s)>' % (self.filename or '?', self.funcname)
@@ -99,7 +100,7 @@ class ASTorator(object):
 
             # positional parameters
             if param.kind == param.POSITIONAL_OR_KEYWORD:
-                sig.args.append(ast_arg(
+                sig.args.append(compat.ast_arg(
                     arg=param.name,
                     annotation=attr(param, 'annotation')))
                 call.args.append(ast.Name(id=param.name, ctx=ast.Load()))
@@ -108,7 +109,7 @@ class ASTorator(object):
 
             # keyword only
             elif param.kind == param.KEYWORD_ONLY:
-                sig.kwonlyargs.append(ast_arg(
+                sig.kwonlyargs.append(compat.ast_arg(
                     arg=param.name,
                     annotation=attr(param, 'annotation')))
                 call.keywords.append(ast.keyword(
@@ -171,7 +172,7 @@ class ASTorator(object):
                     returns=returns)
             ])
             code = compile(ast.fix_missing_locations(expr), filename, 'exec')
-            exec_compat(code, context, loc)
+            compat.exec_compat(code, context, loc)
             return loc[self.funcname]
 
     __call__ = decorate
@@ -181,7 +182,7 @@ class ASTorator(object):
         """
         Create wrapper that calls function with a BoundArgSpec.
         """
-        return NotImplemented
+        raise NotImplementedError()
 
     def decorate_with_boundargs(self, function):
         """
@@ -192,9 +193,11 @@ class ASTorator(object):
                 function(self.signature.bind(*args, **kwargs)))
 
 
-def wraps(function=None, wrapper=None):
+def wraps(function=None, wrapper=None, signature=None):
     """
     Wrap a function and copy its signature.
+
+    WARNING: do not use this function with ``functools.partial``!
 
     >>> def real(a, b=1, *args, **kwargs):
     ...     return "%r %r %r %r" % (a, b, args, kwargs)
@@ -203,7 +206,7 @@ def wraps(function=None, wrapper=None):
     ... def fake(*args, **kwargs):
     ...     return "Fake: " + real(*args, **kwargs)
 
-    >>> assert signature(fake) == signature(real)
+    >>> assert compat.signature(fake) == compat.signature(real)
 
     >>> def check_fake(real, fake, *args, **kwargs):
     ...     rreal = real(*args, **kwargs)
@@ -221,14 +224,14 @@ def wraps(function=None, wrapper=None):
     # defer creation of the actual function wrapper until called again
     # (this is for use as a decorator)
     if wrapper is None:
-        return lambda wrapper: wraps(function, wrapper)
+        return lambda wrapper, signature=signature: wraps(function, wrapper, signature)
     if function is None:
-        return lambda function: wraps(function, wrapper)
+        return lambda function, signature=signature: wraps(function, wrapper, signature)
 
     def has(attr):
         return hasattr(function, attr)
-    return update_wrapper(
-        ASTorator.from_function(function)(wrapper),
+    return functools.update_wrapper(
+        ASTorator.from_function(function, signature=signature)(wrapper),
         function,
         assigned=filter(has, ('__module__', '__name__', '__qualname__',
                               '__doc__', '__annotations__')))
@@ -315,4 +318,156 @@ def value(val):
         return ast.Bytes(s=val)
     else:
         return Value(val)
+
+
+
+class _ParameterBinding(object):
+    def __init__(self,
+                 parameters,
+                 pos, kw,
+                 var_pos, var_kw,
+                 bound_args, bound_kwargs):
+        self._parameters = parameters
+        self._pos = pos
+        self._kw = kw
+        self._var_pos = var_pos
+        self._var_kw = var_kw
+        self.args = bound_args
+        self.kwargs = bound_kwargs
+
+    @classmethod
+    def from_signature(cls, signature):
+        parameters = list(signature.parameters.values())
+        pos = []
+        kw = {}
+        var_pos = None
+        var_kw = None
+        for i,par in enumerate(parameters):
+            if par.kind in (par.POSITIONAL_OR_KEYWORD, par.POSITIONAL_ONLY):
+                pos.append(i)
+            if par.kind in (par.POSITIONAL_OR_KEYWORD, par.KEYWORD_ONLY):
+                kw[par.name] = i
+            if par.kind == par.VAR_POSITIONAL:
+                var_pos = par
+            if par.kind == par.VAR_KEYWORD:
+                var_kw = par
+        return cls(parameters, pos, kw, var_pos, var_kw,
+                   [parameters[i].default for i in pos],
+                   dict((p.name,p.default) for p in parameters
+                        if p.kind == p.KEYWORD_ONLY and p.default is not p.empty))
+
+    def bind(self, *args, **kwargs):
+        pos = list(self._pos)
+        kw = dict(self._kw.items())
+        bound_args = list(self.args)
+        bound_kwargs = dict(self.kwargs.items())
+
+        # bind **kwargs:
+        for key,val in kwargs.items():
+            try:
+                index = kw.pop(key)
+            except KeyError:          # var_kw
+                if self._var_kw is None:
+                    raise TypeError(
+                        "Got an unexpected keyword argument '%s'"
+                        % (key,))
+                if key in bound_kwargs:
+                    raise TypeError(
+                        "Got multiple values for keyword argument '%s'"
+                        % (key,))
+                bound_kwargs[key] = val
+            else:
+                try:
+                    pos.remove(index)
+                except ValueError:
+                    bound_kwargs[key] = val
+                else:
+                    bound_args[index] = val
+
+        # bind *args:
+        for index,val in zip(pos, args):
+            bound_args[index] = val
+            kw.pop(self._parameters[index].name, None)
+        num_args = min(len(pos), len(args))
+        pos = pos[num_args:]
+        args = args[num_args:]
+        if args:
+            if self._var_pos is None:
+                raise TypeError(
+                    "%Got too many positional arguments.")
+            bound_args += list(args)
+
+        return _ParameterBinding(
+            self._parameters,
+            pos, kw,
+            self._var_pos, self._var_kw,
+            bound_args, bound_kwargs)
+
+    def finalize(self):
+        if self._kw:
+            raise TypeError("Unresolved keyword parameter(s): " +
+                            ", ".join(self._kw))
+        if self._pos:
+            raise TypeError("Not enough parameters...")
+
+    @property
+    def free_parameters(self):
+        return [p for i,p in enumerate(self._parameters)
+                if (i in self._pos or p.name in self._kw or
+                    p is self._var_pos or p is self._var_kw)]
+
+
+def partial(func=None, *args, **kwargs):
+    """
+    Create a partial that exactly looks like the original.
+
+    There are some important differences to functools.partial:
+
+    - this function returs a function object which looks like the input
+      function, except for the modified parameters.
+
+    - all overwritten parameters are completely removed from the signature.
+      In functools.partial this is true only for arguments bound by position.
+
+    - the **kwargs are stripped first, then *args
+
+        >>> partial(lambda a,b,c: (a,b,c), 2, a=1)(3)
+        (1, 2, 3)
+
+    - by leaving the func argument empty it can act as decorator:
+
+        >>> @partial(None, bar=0)
+        ... def foo(bar):
+        ...     print(bar)
+        >>> foo()
+        0
+
+    **NOTE:** Duplicating the behaviour of functools.partial cannot be done
+    for the sake of python2 compatibility: binding positional arguments by
+    keyword with functools.partial makes them effectively keyword-only
+    parameters, which is not natively supported in python2.
+
+    **CAUTION:** Removing parameters from the signature might have unexpected
+    side effects like a parameter being passed multiple times (once in the
+    kwargs, once regularly).
+
+    """
+    if func is None:
+        return lambda func: partial(func, *args, **kwargs)
+
+    # NOTE: we can't just use functools.partial/sig.bind_partial to create
+    # the underlying wrapper function/argument binding, because it behaves
+    # differently for positional arguments when specifying parameters by
+    # keyword. (TypeError: multiple values for argument 'xxx')
+
+    sig = compat.signature(func)
+    par_binding = _ParameterBinding.from_signature(sig).bind(*args, **kwargs)
+    new_sig = sig.replace(parameters=par_binding.free_parameters)
+
+    def wrapper(*call_args, **call_kwargs):
+        call_binding = par_binding.bind(*call_args, **call_kwargs)
+        call_binding.finalize()
+        return func(*call_binding.args, **call_binding.kwargs)
+
+    return wraps(func, wrapper, signature=new_sig)
 
