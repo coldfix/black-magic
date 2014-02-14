@@ -18,7 +18,6 @@ __all__ = [
 
 import ast
 import inspect
-import functools
 
 from . import compat
 from . import common
@@ -31,10 +30,13 @@ class ASTorator(object):
     Uses abstract syntax trees for dynamic code generation.
 
     """
-    def __init__(self, signature, funcname=None, filename=None):
+    def __init__(self, signature, funcname=None, filename=None,
+                 assign=None, update=None):
         self.signature = signature
         self.funcname = funcname
         self.filename = filename
+        self.assign = assign or {}
+        self.update = update or {}
 
     @classmethod
     def from_function(cls, function, signature=None):
@@ -46,6 +48,14 @@ class ASTorator(object):
             funcname = function.__name__
         else:
             funcname = None
+
+        def has(attr):
+            return hasattr(function, attr)
+            
+        assign = list(filter(has, ('__module__', '__name__', '__qualname__',
+                                   '__doc__', '__annotations__')))
+        update = {'__dict__': function.__dict__}
+
         return cls(signature or compat.signature(function),
                    funcname,
                    filename)
@@ -160,7 +170,7 @@ class ASTorator(object):
                 body=call
             ))
             code = compile(ast.fix_missing_locations(expr), filename, 'eval')
-            return eval(code, context, loc)
+            return self._update(eval(code, context, loc))
 
         else:
             expr = ast.Module(body=[
@@ -173,7 +183,14 @@ class ASTorator(object):
             ])
             code = compile(ast.fix_missing_locations(expr), filename, 'exec')
             compat.exec_compat(code, context, loc)
-            return loc[self.funcname]
+            return self._update(loc[self.funcname])
+
+    def _update(self, func):
+        for k,v in self.assign.items():
+            setattr(func, k, v)
+        for k,v in self.update.items():
+            getattr(func, k).update(v)
+        return func
 
     __call__ = decorate
 
@@ -228,13 +245,7 @@ def wraps(function=None, wrapper=None, signature=None):
     if function is None:
         return lambda function, signature=signature: wraps(function, wrapper, signature)
 
-    def has(attr):
-        return hasattr(function, attr)
-    return functools.update_wrapper(
-        ASTorator.from_function(function, signature=signature)(wrapper),
-        function,
-        assigned=filter(has, ('__module__', '__name__', '__qualname__',
-                              '__doc__', '__annotations__')))
+    return ASTorator.from_function(function, signature=signature)(wrapper)
 
 
 def decorator(decorator):
@@ -423,7 +434,7 @@ def partial(func=None, *args, **kwargs):
 
     There are some important differences to functools.partial:
 
-    - this function returs a function object which looks like the input
+    - this function returns a function object which looks like the input
       function, except for the modified parameters.
 
     - all overwritten parameters are completely removed from the signature.
