@@ -423,7 +423,7 @@ def partial(func=None, *args, **kwargs):
 
     There are some important differences to functools.partial:
 
-    - this function returs a function object which looks like the input
+    - this function returns a function object which looks like the input
       function, except for the modified parameters.
 
     - all overwritten parameters are completely removed from the signature.

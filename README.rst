@@ -87,11 +87,11 @@ This is similar to the ``functools.partial`` function.
 
 There are some differences, though:
 
-- this function returs a function object which looks like the input
+- this function returns a function object which looks like the input
   function, except for the modified parameters.
 
-- all overwritten parameters are completely removed from the signature.
-  In functools.partial this is true only for arguments bound by position.
+- all overwritten parameters are completely removed from the signature. In
+  ``functools.partial`` this is true only for arguments bound by position.
 
 - the ``**kwargs`` are stripped first, then ``*args``
 
@@ -100,7 +100,7 @@ There are some differences, though:
       >>> partial(lambda a,b,c: (a,b,c), 2, a=1)(3)
       (1, 2, 3)
 
-- by leaving the func argument empty it can act as decorator:
+- by leaving the ``func`` argument empty ``partial`` can act as decorator:
 
   .. code:: python
 
