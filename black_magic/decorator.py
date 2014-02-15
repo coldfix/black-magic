@@ -25,7 +25,7 @@ from . import common
 
 class ASTorator(object):
     """
-    Decorates wapper functions with a given function signature.
+    Creates wapper functions with specific signature.
 
     Uses abstract syntax trees for dynamic code generation.
 
@@ -40,6 +40,15 @@ class ASTorator(object):
 
     @classmethod
     def from_function(cls, function, signature=None):
+        """
+        Create a wrapper function generator from the given function.
+
+        Pass ``signature`` if you want to create signatures that are
+        different from the signature of ``function``. In this case,
+        ``function`` will only be used to copy docstring and other
+        information.
+
+        """
         try:
             filename = inspect.getsourcefile(function)
         except:
@@ -62,7 +71,7 @@ class ASTorator(object):
 
     def decorate(self, callback):
         """
-        Create wrapper that calls function with all its arguments.
+        Create wrapper for callback.
 
         The callback may be a function, lambda or any ast.expr.
 
@@ -214,28 +223,27 @@ def wraps(function=None, wrapper=None, signature=None):
     """
     Wrap a function and copy its signature.
 
-    WARNING: do not use this function with ``functools.partial``!
+    WARNING: do not use ``functools.partial``s with this function!
 
-    >>> def real(a, b=1, *args, **kwargs):
-    ...     return "%r %r %r %r" % (a, b, args, kwargs)
+    >>> def add(a, b=0):
+    ...     return a + b
 
-    >>> @wraps(real)
-    ... def fake(*args, **kwargs):
-    ...     return "Fake: " + real(*args, **kwargs)
+    >>> @wraps(add)
+    ... def add_neg(*args, **kwargs):
+    ...     return - add(*args, **kwargs)
 
-    >>> assert compat.signature(fake) == compat.signature(real)
+    >>> add_neg(1)
+    -1
+    >>> add_neg(a=2, b=3)
+    -5
 
-    >>> def check_fake(real, fake, *args, **kwargs):
-    ...     rreal = real(*args, **kwargs)
-    ...     rfake = fake(*args, **kwargs)
-    ...     assert rfake == "Fake: " + rreal, '%r != %r' % (rreal, rfake)
+    Note that all default arguments are conserved even by object identity:
 
-    >>> check_fake(real, fake, 1, 2, 3, 4, kwonly=5, kwarg=6)
-
-    >>> x = [3]
-    >>> def real(first = x): return first
-    >>> fake = wraps(real, lambda first: real(first))
-    >>> assert fake() is real()
+    >>> def real(a=[]):
+    ...     return a
+    >>> fake = wraps(real, lambda a: real(a))
+    >>> fake() is real()
+    True
 
     """
     # defer creation of the actual function wrapper until called again
@@ -250,18 +258,20 @@ def wraps(function=None, wrapper=None, signature=None):
 
 def decorator(decorator):
     """
-    Decorator for signature preserving function decorators.
-
-    >>> def mul(first, second = 1):
-    ...     return first * second
+    Create signature preserving function decorators.
 
     >>> @decorator
     ... def plus_one(fn):
-    ...     return lambda *args, **kwargs: 1 + fn(*args, **kwargs)
+    ...     def fake(*args, **kwargs):
+    ...         return 1 + fn(*args, **kwargs)
+    ...     return fake
 
-    >>> fake = plus_one(mul)
-    >>> assert fake(2, 3) == 7
-    >>> assert fake(4) == 5
+    >>> @plus_one
+    ... def mul_plus_one(a, b):
+    ...     return a * b
+
+    >>> mul_plus_one(2, 3)
+    7
 
     """
     @wraps(decorator)
@@ -271,17 +281,18 @@ def decorator(decorator):
 
 def flatorator(flatorator):
     """
-    Decorator for flat signature preserving decorators.
+    Create flat signature preserving decorators.
 
     >>> @flatorator
-    ... def fakeit(fn, *args, **kwargs):
-    ...     return 1 + fn(*args, **kwargs)
+    ... def times_two(fn, *args, **kwargs):
+    ...     return 2 * fn(*args, **kwargs)
 
-    >>> @fakeit
-    ... def real(a, b=0):
+    >>> @times_two
+    ... def add_times_two(a, b):
     ...     return a + b
-    >>> real(1)
-    2
+
+    >>> add_times_two(1, 2)
+    6
 
     """
     def decorator(fn):
