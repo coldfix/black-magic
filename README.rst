@@ -183,7 +183,7 @@ Under the hood
 
 Q: This uses ugly ``str`` concat and ``eval`` code, right?
 
-A: No, it uses `abstract syntax trees`_ to do its dynamic code generation.
+A: No, it uses ugly `abstract syntax tree`_ code to do its dynamic code generation.
 
 .. _abstract syntax trees: http://docs.python.org/3.3/library/ast.html?highlight=ast#ast
 
