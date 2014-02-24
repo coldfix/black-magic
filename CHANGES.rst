@@ -1,6 +1,12 @@
 Changelog
 ~~~~~~~~~
 
+0.0.6
+^^^^^
+
+- fix functools.update_wrapper emulation in black_magic.decorator.wraps().
+  (was supported but not used beforehand)
+
 0.0.5
 ^^^^^
 

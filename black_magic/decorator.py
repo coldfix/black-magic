@@ -58,16 +58,15 @@ class ASTorator(object):
         else:
             funcname = None
 
-        def has(attr):
-            return hasattr(function, attr)
-            
-        assign = list(filter(has, ('__module__', '__name__', '__qualname__',
-                                   '__doc__', '__annotations__')))
+        assign = dict((attr, getattr(function, attr))
+                      for attr in ('__module__', '__name__', '__qualname__',
+                                   '__doc__', '__annotations__')
+                      if hasattr(function, attr))
         update = {'__dict__': function.__dict__}
 
         return cls(signature or compat.signature(function),
-                   funcname,
-                   filename)
+                   funcname=funcname, filename=filename,
+                   assign=assign, update=update)
 
     def decorate(self, callback):
         """
