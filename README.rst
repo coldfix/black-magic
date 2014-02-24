@@ -30,8 +30,8 @@ Currently there is only one module available. However, I am all open for
 cool ideas.
 
 
-black\_magic.decorator
-~~~~~~~~~~~~~~~~~~~~~~
+black_magic.decorator
+~~~~~~~~~~~~~~~~~~~~~
 
 This is intended to become a more modern and flexible replacement for the
 the well known decorator_ module.  This module benefits an API for more
@@ -52,8 +52,8 @@ to ``wraps``. If you make something useful, please consider contributing
 your functionality to this module.
 
 
-wraps
------
+.wraps()
+--------
 
 ``wraps`` can be used similarly to the standard ``functools.wraps``
 function. However, it returns a real function, i.e. something that will
@@ -94,8 +94,8 @@ If you want to get real crazy you can even use ast.expr_'s:
 **WARNING**: Do not use ``wraps`` with ``functools.partial``! It won't
 work (if using any keyword bindings).
 
-partial
--------
+.partial()
+----------
 
 This is similar to the ``functools.partial`` function.
 
@@ -133,8 +133,8 @@ There are some differences, though:
       >>> foo()
       0
 
-decorator
----------
+.decorator()
+------------
 
 This is the canonic utility to create decorators:
 
@@ -156,8 +156,8 @@ This is the canonic utility to create decorators:
     7
 
 
-flatorator
-----------
+.flatorator()
+-------------
 
 ``flatorator`` imitates the functionality of the well known `decorator`_
 module.
@@ -179,13 +179,13 @@ module.
 
 
 Under the hood
-^^^^^^^^^^^^^^
+--------------
 
 Q: This uses ugly ``str`` concat and ``eval`` code, right?
 
 A: No, it uses ugly `abstract syntax tree`_ code to do its dynamic code generation.
 
-.. _abstract syntax trees: http://docs.python.org/3.3/library/ast.html?highlight=ast#ast
+.. _abstract syntax tree: http://docs.python.org/3.3/library/ast.html?highlight=ast#ast
 
 Tests
 ~~~~~
