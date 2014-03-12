@@ -22,6 +22,9 @@ import inspect
 from . import compat
 from . import common
 
+def _is_partial_kw(param):
+    return getattr(param, '_partial_kwarg', False)
+
 
 class ASTorator(object):
     """
@@ -113,15 +116,25 @@ class ASTorator(object):
             starargs=None,
             kwargs=None)
 
+        _partial_kw = False
         for param in self.signature.parameters.values():
             context[param.name] = param
 
             # positional parameters
             if param.kind == param.POSITIONAL_OR_KEYWORD:
+                if _is_partial_kw(param):
+                    _partial_kw = True
+                    continue
+
                 sig.args.append(compat.ast_arg(
                     arg=param.name,
                     annotation=attr(param, 'annotation')))
-                call.args.append(ast.Name(id=param.name, ctx=ast.Load()))
+                if _partial_kw:
+                    call.keywords.append(ast.keyword(
+                        arg=param.name,
+                        value=ast.Name(id=param.name, ctx=ast.Load())))
+                else:
+                    call.args.append(ast.Name(id=param.name, ctx=ast.Load()))
                 if hasattr(param, 'default'):
                     sig.defaults.append(attr(param, 'default'))
 
@@ -343,11 +356,15 @@ def value(val):
 
 
 class _ParameterBinding(object):
+    # Okay, this code is a real mess now, I hate it! If anybody comes up
+    # with something that looks remotely clean, pleeeaaasee go ahead and
+    # send me a patch!
     def __init__(self,
                  parameters,
                  pos, kw,
                  var_pos, var_kw,
-                 bound_args, bound_kwargs):
+                 bound_args, bound_kwargs,
+                 partial_kw):
         self._parameters = parameters
         self._pos = pos
         self._kw = kw
@@ -355,6 +372,7 @@ class _ParameterBinding(object):
         self._var_kw = var_kw
         self.args = bound_args
         self.kwargs = bound_kwargs
+        self.partial_kw = partial_kw
 
     @classmethod
     def from_signature(cls, signature):
@@ -363,7 +381,11 @@ class _ParameterBinding(object):
         kw = {}
         var_pos = None
         var_kw = None
+        partial_kw = len(parameters)
         for i,par in enumerate(parameters):
+            if _is_partial_kw(par):
+                partial_kw = min(partial_kw, i)
+                continue
             if par.kind in (par.POSITIONAL_OR_KEYWORD, par.POSITIONAL_ONLY):
                 pos.append(i)
             if par.kind in (par.POSITIONAL_OR_KEYWORD, par.KEYWORD_ONLY):
@@ -373,15 +395,17 @@ class _ParameterBinding(object):
             if par.kind == par.VAR_KEYWORD:
                 var_kw = par
         return cls(parameters, pos, kw, var_pos, var_kw,
-                   [parameters[i].default for i in pos],
+                   [parameters[i].default for i in pos if i < partial_kw],
                    dict((p.name,p.default) for p in parameters
-                        if p.kind == p.KEYWORD_ONLY and p.default is not p.empty))
+                        if p.kind == p.KEYWORD_ONLY and p.default is not p.empty),
+                   partial_kw)
 
     def bind(self, *args, **kwargs):
         pos = list(self._pos)
         kw = dict(self._kw.items())
         bound_args = list(self.args)
         bound_kwargs = dict(self.kwargs.items())
+        partial_kw = self.partial_kw
 
         # bind **kwargs:
         for key,val in kwargs.items():
@@ -403,26 +427,34 @@ class _ParameterBinding(object):
                 except ValueError:
                     bound_kwargs[key] = val
                 else:
-                    bound_args[index] = val
+                    if index > partial_kw:
+                        bound_kwargs[key] = val
+                    else:
+                        bound_args[index] = val
 
         # bind *args:
         for index,val in zip(pos, args):
-            bound_args[index] = val
-            kw.pop(self._parameters[index].name, None)
+            key = self._parameters[index].name
+            if index > partial_kw:
+                bound_kwargs[key] = val
+            else:
+                bound_args[index] = val
+            kw.pop(key, None)
         num_args = min(len(pos), len(args))
         pos = pos[num_args:]
         args = args[num_args:]
         if args:
             if self._var_pos is None:
                 raise TypeError(
-                    "%Got too many positional arguments.")
+                    "Got too many positional arguments.")
             bound_args += list(args)
 
         return _ParameterBinding(
             self._parameters,
             pos, kw,
             self._var_pos, self._var_kw,
-            bound_args, bound_kwargs)
+            bound_args, bound_kwargs,
+            partial_kw)
 
     def finalize(self):
         if self._kw:

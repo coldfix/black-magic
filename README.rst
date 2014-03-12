@@ -91,8 +91,9 @@ If you want to get real crazy you can even use ast.expr_'s:
 .. _ast.expr: http://docs.python.org/3.3/library/ast.html?highlight=ast#abstract-grammar
 
 
-**WARNING**: Do not use ``wraps`` with ``functools.partial``! It won't
-work (if using any keyword bindings).
+**WARNING**: before using ``functools.partial`` with any of the functions in
+this module, make sure to read the warning below!
+
 
 .partial()
 ----------
@@ -132,6 +133,7 @@ There are some differences, though:
       ...     print(bar)
       >>> foo()
       0
+
 
 .decorator()
 ------------
@@ -187,6 +189,73 @@ A: No, it uses ugly `abstract syntax tree`_ code to do its dynamic code generati
 
 .. _abstract syntax tree: http://docs.python.org/3.3/library/ast.html?highlight=ast#ast
 
+
+WARNING: performance hits incoming
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Decorating a function with the tools in this module is a quite costy
+operation, so don't do it very often! Invoking the wrapper is no problem on
+the other hand.
+
+
+WARNING: functools.partial is evil
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Be careful when passing ``functools.partial`` objects into ``.wraps``, or
+any black magic functions more generally. ``functools.partial`` features
+very unsensible handling of arguments that are bound by keyword. These, and
+all subsequent arguments, become keyword-only parameters. Consider the
+following example:
+
+.. code:: python
+
+    >>> import functools
+    >>> def func(a, b, *args):
+    ...     return (a, b, c, args)
+    >>> part = functools.partial(func, a=0)
+    >>> part(1)
+    Traceback (most recent call last):
+        ...
+    TypeError: func() got multiple values for argument 'a'
+
+Furthermore, note that the ``*args`` parameter becomes completely
+inaccessible, forever!
+
+For compatibility between python versions and ease of use, I chose to handle
+``functools.partial`` objects as if you had actually used
+``black_magic.decorator.partial`` with the same arguments, i.e.:
+
+.. code:: python
+
+    >>> wrap = wraps(part)(part)
+    >>> wrap(1)
+    (0, 1, ())
+    >>> wrap(1, a=0)
+    Traceback (most recent call last):
+        ...
+    TypeError: <lambda>() got an unexpected keyword argument 'a'
+
+There are two exceptions:
+
+- unlike with ``black_magic.decorator.partial`` the ``*args`` argument stays
+  inaccessible
+
+- Furthermore, the parameter ``a`` can be overwritten if the original
+  function has a ``**kwargs`` argument:
+
+.. code:: python
+
+    >>> def kw_func(a, **kwargs):
+    ...     return (a, kwargs):
+    >>> kw_part = functools.partial(kw_func, a=0)
+    >>> kw_wrap = wraps(kw_part)(kw_part)
+    >>> kw_wrap(a=1)
+    (1, {})
+
+If you use ``functools.partial`` to bind only positional parameters, there
+should be no problem!
+
+
 Tests
 ~~~~~
 
@@ -194,6 +263,7 @@ This module has been tested to work on python{2.6, 2.7, 3.2, 3.3} and
 PyPy1.9 using `Travis CI`_.
 
 .. _Travis CI: https://travis-ci.org/
+
 
 License
 ~~~~~~~
