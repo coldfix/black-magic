@@ -7,6 +7,7 @@ __all__ = ['TestASTorator']
 import unittest
 from black_magic.decorator import wraps, partial
 from black_magic.compat import signature
+import functools
 
 
 class Util(object):
@@ -153,7 +154,7 @@ class TestASTorator(unittest.TestCase, Util):
 
     def test_partial(self):
         def orig0(a, b, c, *args, **kwargs):
-            return hash((a, b, c, args))
+            return hash((a, b, c, args, hd(kwargs)))
         self.mutate(partial(orig0, 0, a=1))
         self.check_result(c=2, d=5)
         self.check_result(2, 3, 4)
@@ -178,4 +179,47 @@ class TestASTorator(unittest.TestCase, Util):
         self.must_fail(2, b=2)
         self.must_fail(0, 2, d=3)
 
+    def test_functools_partial(self):
+        def orig0(a, b, c, **kwargs):
+            return hash((a, b, c, hd(kwargs)))
+        p0 = functools.partial(orig0, b=0, a=1)
+        w0 = wraps(p0)(p0)
+        self.assertEqual(orig0(1, 0, 2, d=5),
+                         w0(c=2, d=5))
+        self.assertEqual(orig0(1, 0, 2),
+                         w0(2))
+        self.assertRaises(TypeError, w0)
 
+        orig1 = orig0
+        p1 = functools.partial(orig1, 0, 1)
+        w1 = wraps(p1)(p1)
+        self.assertEqual(orig1(0, 1, 2),
+                         w1(2))
+        self.assertEqual(orig1(0, 1, c=2),
+                         w1(c=2))
+        self.assertEqual(orig1(0, 1, c=2, d=5),
+                         w1(2, d=5))
+        self.assertRaises(TypeError, w1)
+        self.assertRaises(TypeError, w1, a=1, c=2)
+
+        def orig2(a, b, c):
+            return hash((a, b, c))
+        p2 = functools.partial(orig2, b=1)
+        w2 = wraps(p2)(p2)
+        self.assertEqual(orig2(0, 1, 2),
+                         w2(0, 2))
+        self.assertEqual(orig2(0, 1, 2),
+                         w2(a=0, c=2))
+        self.assertEqual(orig2(0, 1, 2),
+                         w2(0, c=2))
+        self.assertRaises(TypeError, w2)
+        self.assertRaises(TypeError, w2, 2, b=2)
+        self.assertRaises(TypeError, w2, 2, d=3)
+
+        # behaviour that should be changed some time:
+        self.assertEqual(orig0(0, 0, 2),
+                         w0(a=0, c=2))
+        #self.assertRaises(TypeError, w0, a=0, c=2)
+        self.assertEqual(orig0(1, 1, 2),
+                         w0(b=1, c=2))
+        #self.assertRaises(TypeError, w0, b=1, c=2)
