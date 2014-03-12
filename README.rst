@@ -190,6 +190,14 @@ A: No, it uses ugly `abstract syntax tree`_ code to do its dynamic code generati
 .. _abstract syntax tree: http://docs.python.org/3.3/library/ast.html?highlight=ast#ast
 
 
+WARNING: performance hits incoming
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Decorating a function with the tools in this module is a quite costy
+operation, so don't do it very often! Invoking the wrapper is no problem on
+the other hand.
+
+
 WARNING: functools.partial is evil
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
