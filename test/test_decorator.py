@@ -223,3 +223,29 @@ class TestASTorator(unittest.TestCase, Util):
         self.assertEqual(orig0(1, 1, 2),
                          w0(b=1, c=2))
         #self.assertRaises(TypeError, w0, b=1, c=2)
+
+    def test_partial_with_functools_partial(self):
+        def orig(a, b, c):
+            return (a, b, c)
+        part = functools.partial(orig, b=1)
+        wrap = partial(part)
+        self.assertEqual(orig(0, 1, 2),
+                         wrap(0, 2))
+        self.assertEqual(orig(0, 1, 2),
+                         wrap(a=0, c=2))
+        self.assertRaises(TypeError, wrap, 0, 2, b=1)
+
+        def orig_kw(a, b, c, **kwargs):
+            return (a, b, c, hd(kwargs))
+        part_kw = functools.partial(orig_kw, b=1)
+        wrap_kw = partial(part_kw)
+
+        self.assertEqual(orig_kw(0, 1, 2, d=1),
+                         wrap_kw(0, 2, d=1))
+        self.assertEqual(orig_kw(0, 1, 2),
+                         wrap_kw(a=0, c=2))
+
+        # behaviour that should be changed some time:
+        self.assertEqual(orig_kw(0, 3, 2),
+                         wrap_kw(0, 2, b=3))
+        # self.assertRaises(TypeError, wrap_kw, 0, 2, b=1)
