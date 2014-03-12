@@ -1,6 +1,11 @@
 Changelog
 ~~~~~~~~~
 
+0.0.7
+-----
+
+- partial support for ``functools.partial``
+
 0.0.6
 -----
 
