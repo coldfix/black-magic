@@ -14,6 +14,8 @@ Changelog
 - add ``metapartial`` function, that accepts only ``*args, **kwargs`` to be
   bound, while the function to be used can only be specified in a second
   step.
+- slightly improve performance of ``black_magic.decorator``. Is now
+  approximately the same as the performance of the ``decorator`` module.
 
 0.0.8
 -----
