@@ -505,6 +505,17 @@ def metapartial(*args, **kwargs):
         unexpected side effects like a parameter being passed multiple
         times (once in the kwargs, once regularly).
 
+        **CAUTION:** Iterative invocation of ``partial`` (with ``None`` as
+        first argument) does not hide parameters the same way that
+        ``partial`` applied to a function does, i.e. you can move bound
+        arguments to the right in later calls:
+
+        >>> partial(None, 1)(None, a=0)(lambda a, b: (a, b))()
+        (0, 1)
+
+        This might be changed in future versions, so don't rely on this
+        behaviour.
+
         """
         pos = _args + args[1:]
         kw = _merge_kwargs(_kwargs, kwargs)
