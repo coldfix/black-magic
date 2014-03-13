@@ -113,25 +113,15 @@ class ASTorator(object):
             starargs=None,
             kwargs=None)
 
-        _partial_kw = False
         for param in self.signature.parameters.values():
             context[param.name] = param
 
             # positional parameters
             if param.kind == param.POSITIONAL_OR_KEYWORD:
-                if getattr(param, '_partial_kwarg', False):
-                    _partial_kw = True
-                    continue
-
                 sig.args.append(compat.ast_arg(
                     arg=param.name,
                     annotation=attr(param, 'annotation')))
-                if _partial_kw:
-                    call.keywords.append(ast.keyword(
-                        arg=param.name,
-                        value=ast.Name(id=param.name, ctx=ast.Load())))
-                else:
-                    call.args.append(ast.Name(id=param.name, ctx=ast.Load()))
+                call.args.append(ast.Name(id=param.name, ctx=ast.Load()))
                 if hasattr(param, 'default'):
                     sig.defaults.append(attr(param, 'default'))
 
