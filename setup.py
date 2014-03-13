@@ -21,13 +21,13 @@ else:                   # python3
 # invoke distutils
 setup(
     name='black-magic',
-    version='0.0.7',
+    version='0.0.8',
     description='Decorator utility that operates on black magic',
     long_description=long_description,
     author='Thomas Gläßle',
     author_email='t_glaessle@gmx.de',
     url='https://github.com/coldfix/black-magic',
-    license='Public domain',
+    license='Public Domain',
     packages=['black_magic'],
     install_requires=install_requires,
     classifiers=[
