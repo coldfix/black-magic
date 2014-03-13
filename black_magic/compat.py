@@ -10,7 +10,11 @@ __all__ = ['signature', 'Signature',
            'getfullargspec', 'FullArgSpec',
            'ast_arg',
            'exec_compat',
-           'is_identifier']
+           'is_identifier',
+           'copy_function']
+
+import sys
+import types
 
 # Python2 has no annotations and kwonly arguments, therefore we need to
 # create a version of getargspec that returns dummy variables
@@ -91,3 +95,19 @@ except SyntaxError:
 def is_identifier(name):
     return _identifier_regex.match(name) is not None
 
+if sys.version_info >= (3,0):
+    def copy_function(func, **kwargs):
+        return types.FunctionType(
+            kwargs.get('__code__', func.__code__),
+            kwargs.get('__globals__', func.__globals__),
+            kwargs.get('__name__', func.__name__),
+            kwargs.get('__defaults__', func.__defaults__),
+            kwargs.get('__closure__', func.__closure__),)
+else:
+    def copy_function(func, **kwargs):
+        return types.FunctionType(
+            kwargs.get('__code__', func.func_code),
+            kwargs.get('__globals__', func.func_globals),
+            kwargs.get('__name__', func.func_name),
+            kwargs.get('__defaults__', func.func_defaults),
+            kwargs.get('__closure__', func.func_closure),)
