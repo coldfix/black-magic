@@ -38,6 +38,7 @@ class ASTorator(object):
         self.filename = filename
         self.assign = assign or {}
         self.update = update or {}
+        self._init()
 
     @classmethod
     def from_function(cls, function, signature=None):
@@ -73,19 +74,7 @@ class ASTorator(object):
                    funcname=funcname, filename=filename,
                    assign=assign, update=update)
 
-    def decorate(self, callback):
-        """
-        Create wrapper for callback.
-
-        The callback may be a function, lambda or any ast.expr.
-
-        """
-        # make functools.partial objects behave nice
-        if isinstance(callback, functools.partial) and callback.keywords:
-            callback = partial(callback)
-
-        # TODO: check whether the callback has compatible signature
-
+    def _init(self):
         scope = common.Scope(self.signature.parameters.keys())
         context = {'__builtins__': __builtins__}
 
@@ -176,6 +165,33 @@ class ASTorator(object):
                                lineno=1, col_offset=0)
         else:
             returns = None
+
+        self._call = call
+        self._sig = sig
+        self._context = context
+        self._callback_name = callback_name
+        self._filename = filename
+        self._returns = returns
+
+    def decorate(self, callback):
+        """
+        Create wrapper for callback.
+
+        The callback may be a function, lambda or any ast.expr.
+
+        """
+        call = self._call
+        sig = self._sig
+        context = self._context
+        callback_name = self._callback_name
+        filename = self._filename
+        returns = self._returns
+
+        # make functools.partial objects behave nice
+        if isinstance(callback, functools.partial) and callback.keywords:
+            callback = partial(callback)
+
+        # TODO: check whether the callback has compatible signature
 
         # THIS IS SOMEWHAT DANGEROUS, BUT ALSO REALLY COOL:
         if isinstance(callback, ast.expr):
