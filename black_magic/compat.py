@@ -48,8 +48,8 @@ try:
     from ast import arg as ast_arg
 except ImportError:
     import ast
-    def ast_arg(arg, annotation):
-        return ast.Name(id=arg, ctx=ast.Param())
+    def ast_arg(arg, annotation, **kwargs):
+        return ast.Name(id=arg, ctx=ast.Param(), **kwargs)
 
 
 def exec_compat(expression, globals, locals=None):
