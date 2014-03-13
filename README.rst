@@ -134,6 +134,30 @@ There are some differences, though:
       >>> foo()
       0
 
+**CAUTION:** Iterative invocation of ``partial`` (with ``None`` as first
+argument) doesn't hide parameters the same way that ``partial`` applied to
+a function does, i.e. you can move bound arguments to the right in later
+calls:
+
+
+.metapartial()
+--------------
+
+The returned value can be called like ``partial`` bind a function to the
+parameters given here. Binding further keyword arguments via the returned
+function will overwrite keyword parameters of previous bindings with the
+same name.
+
+.. code:: python
+
+    >>> @metapartial(1, a=0, c=3)
+    ... def func(a, b, *args, **kwargs):
+    ...     return (a, b, args, kwargs)
+    >>> func(2)
+    (0, 1, (2,), {'c': 3})
+
+In fact ``partial = metapartial()``.
+
 
 .decorator()
 ------------

@@ -1,6 +1,20 @@
 Changelog
 ~~~~~~~~~
 
+0.0.9
+-----
+
+- fix signature of ``black_magic.decorator.partial``: remove named
+  parameter ``func`` that can prevent binding of the a parameter with the
+  same name into ``**kwargs``
+- return value of ``partial`` can now be used for further parameter
+  (re-)binding if the function was left open. CAREFUL: this might have
+  unexpected characteristics, such as moving positional parameters to the
+  right in later calls.
+- add ``metapartial`` function, that accepts only ``*args, **kwargs`` to be
+  bound, while the function to be used can only be specified in a second
+  step.
+
 0.0.8
 -----
 

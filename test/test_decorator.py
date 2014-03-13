@@ -5,43 +5,12 @@ Python2 compatible unit tests for black_magic.decorator
 __all__ = ['TestASTorator']
 
 import unittest
-from black_magic.decorator import wraps, partial
-from black_magic.compat import signature
 import functools
+from test._common import hd, _TestUtil
 
+from black_magic.decorator import wraps, partial
 
-class Util(object):
-    def mutate(self, real):
-        @wraps(real)
-        def fake(*args, **kwargs):
-            return ~real(*args, **kwargs)
-        self.assertEqual(signature(fake), signature(real))
-        self.real = real
-        self.fake = fake
-
-    def check_result(self, *args, **kwargs):
-        self.assertEqual(~self.real(*args, **kwargs),
-                         self.fake(*args, **kwargs))
-
-    def must_fail(self, *args, **kwargs):
-        self.assertRaises(TypeError, self.fake, *args, **kwargs)
-
-    def assertIs(self, expr1, expr2):
-        """Replacement for missing unittest.assertIs in python2.6."""
-        if expr1 is not expr2:
-            self.fail('%s is not %s' % (repr(expr1), repr(expr2)))
-
-    def assertIsNot(self, expr1, expr2):
-        """Replacement for missing unittest.assertIs in python2.6."""
-        if expr1 is expr2:
-            self.fail('%s is %s' % (repr(expr1), repr(expr2)))
-
-def hd(d):
-    """Get hashable form of dictionary."""
-    return frozenset(d.items())
-
-
-class TestASTorator(unittest.TestCase, Util):
+class TestASTorator(unittest.TestCase, _TestUtil):
     """
     Unit tests for the wraps function (uses ASTorator).
 
@@ -217,15 +186,3 @@ class TestASTorator(unittest.TestCase, Util):
         self.assertRaises(TypeError, w2)
         self.assertRaises(TypeError, w2, 2, b=2)
         self.assertRaises(TypeError, w2, 0, 2, d=3)
-
-    def test_partial_with_functools_partial(self):
-        def orig(a, b, c, *args, **kwargs):
-            return (a, b, c)
-        part = functools.partial(orig, b=1)
-        wrap = partial(part)
-        self.assertEqual(orig(0, 1, 2, 3, 4, d=5),
-                         wrap(0, 2, 3, 5, d=5))
-        self.assertEqual(orig(0, 1, 2, d=5),
-                         wrap(0, c=2, d=5))
-        self.assertRaises(TypeError, wrap, 0, 2, b=1)
-        self.assertRaises(TypeError, wrap, 0)
