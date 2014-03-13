@@ -5,9 +5,9 @@ Python3 unit tests for black_magic.decorator
 __all__ = ['TestASToratorPy3']
 
 import unittest
-from test.test_decorator import Util, hd
+from test._common import _TestUtil, hd
 
-class TestASToratorPy3(unittest.TestCase, Util):
+class TestASToratorPy3(unittest.TestCase, _TestUtil):
     """
     Python3 only tests for black_magic.decorator.wraps (uses AST).
 
