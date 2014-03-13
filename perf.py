@@ -49,6 +49,11 @@ class BlackMagicPartial(Base):
         self.func = black_magic.decorator.partial(func, 0)
 
 def main():
+    import sys
+    if len(sys.argv) > 1:
+        print(timeit(BlackMagicDecorator, number=10000))
+        return
+
     for cls in (StandardDecorator, BlackMagicDecorator,
                 StandardPartial, BlackMagicPartial):
         print(cls.__name__,)
