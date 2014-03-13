@@ -18,6 +18,7 @@ __all__ = [
 
 import ast
 import inspect
+import functools
 
 from . import compat
 from . import common
@@ -49,6 +50,10 @@ class ASTorator(object):
         information.
 
         """
+        # this actually changes the signature for functools.partials
+        # effectively, but it plays nicely with the rest of this library:
+        if isinstance(function, functools.partial) and function.keywords:
+            function = partial(function)
         try:
             filename = inspect.getsourcefile(function)
         except:
@@ -75,6 +80,10 @@ class ASTorator(object):
         The callback may be a function, lambda or any ast.expr.
 
         """
+        # make functools.partial objects behave nice
+        if isinstance(callback, functools.partial) and callback.keywords:
+            callback = partial(callback)
+
         # TODO: check whether the callback has compatible signature
 
         scope = common.Scope(self.signature.parameters.keys())
@@ -475,6 +484,17 @@ def partial(func=None, *args, **kwargs):
     """
     if func is None:
         return lambda func: partial(func, *args, **kwargs)
+
+    # Unwrap functools.partial functions, these are pure evil :(except for
+    # their nice performance:)!
+    if isinstance(func, functools.partial):
+        pos = list(func.args) + list(args)
+        if func.keywords:
+            kw = func.keywords.copy()
+            kw.update(kwargs)
+        else:
+            kw = kwargs
+        func = partial(func.func, *pos, **kw)
 
     # NOTE: we can't just use functools.partial/sig.bind_partial to create
     # the underlying wrapper function/argument binding, because it behaves
