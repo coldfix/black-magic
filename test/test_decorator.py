@@ -180,15 +180,17 @@ class TestASTorator(unittest.TestCase, Util):
         self.must_fail(0, 2, d=3)
 
     def test_functools_partial(self):
-        def orig0(a, b, c, **kwargs):
-            return hash((a, b, c, hd(kwargs)))
+        def orig0(a, b, c, *args, **kwargs):
+            return hash((a, b, c, args, hd(kwargs)))
         p0 = functools.partial(orig0, b=0, a=1)
         w0 = wraps(p0)(p0)
         self.assertEqual(orig0(1, 0, 2, d=5),
                          w0(c=2, d=5))
-        self.assertEqual(orig0(1, 0, 2),
-                         w0(2))
+        self.assertEqual(orig0(1, 0, 2, 3, 4),
+                         w0(2, 3, 4))
         self.assertRaises(TypeError, w0)
+        self.assertRaises(TypeError, w0, a=0, c=2)
+        self.assertRaises(TypeError, w0, b=1, c=2)
 
         orig1 = orig0
         p1 = functools.partial(orig1, 0, 1)
@@ -197,8 +199,8 @@ class TestASTorator(unittest.TestCase, Util):
                          w1(2))
         self.assertEqual(orig1(0, 1, c=2),
                          w1(c=2))
-        self.assertEqual(orig1(0, 1, c=2, d=5),
-                         w1(2, d=5))
+        self.assertEqual(orig1(0, 1, 2, 3, d=5),
+                         w1(2, 3, d=5))
         self.assertRaises(TypeError, w1)
         self.assertRaises(TypeError, w1, a=1, c=2)
 
@@ -214,38 +216,16 @@ class TestASTorator(unittest.TestCase, Util):
                          w2(0, c=2))
         self.assertRaises(TypeError, w2)
         self.assertRaises(TypeError, w2, 2, b=2)
-        self.assertRaises(TypeError, w2, 2, d=3)
-
-        # behaviour that should be changed some time:
-        self.assertEqual(orig0(0, 0, 2),
-                         w0(a=0, c=2))
-        #self.assertRaises(TypeError, w0, a=0, c=2)
-        self.assertEqual(orig0(1, 1, 2),
-                         w0(b=1, c=2))
-        #self.assertRaises(TypeError, w0, b=1, c=2)
+        self.assertRaises(TypeError, w2, 0, 2, d=3)
 
     def test_partial_with_functools_partial(self):
-        def orig(a, b, c):
+        def orig(a, b, c, *args, **kwargs):
             return (a, b, c)
         part = functools.partial(orig, b=1)
         wrap = partial(part)
-        self.assertEqual(orig(0, 1, 2),
-                         wrap(0, 2))
-        self.assertEqual(orig(0, 1, 2),
-                         wrap(a=0, c=2))
+        self.assertEqual(orig(0, 1, 2, 3, 4, d=5),
+                         wrap(0, 2, 3, 5, d=5))
+        self.assertEqual(orig(0, 1, 2, d=5),
+                         wrap(0, c=2, d=5))
         self.assertRaises(TypeError, wrap, 0, 2, b=1)
-
-        def orig_kw(a, b, c, **kwargs):
-            return (a, b, c, hd(kwargs))
-        part_kw = functools.partial(orig_kw, b=1)
-        wrap_kw = partial(part_kw)
-
-        self.assertEqual(orig_kw(0, 1, 2, d=1),
-                         wrap_kw(0, 2, d=1))
-        self.assertEqual(orig_kw(0, 1, 2),
-                         wrap_kw(a=0, c=2))
-
-        # behaviour that should be changed some time:
-        self.assertEqual(orig_kw(0, 3, 2),
-                         wrap_kw(0, 2, b=3))
-        # self.assertRaises(TypeError, wrap_kw, 0, 2, b=1)
+        self.assertRaises(TypeError, wrap, 0)
