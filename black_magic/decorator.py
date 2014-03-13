@@ -83,11 +83,11 @@ class ASTorator(object):
 
         # Add a value to the context
         empty = self.signature.empty
-        def hasattr(param, attr):
+        def _hasattr(param, attr):
             return not getattr(param, attr, empty) is empty
 
         def attr(param, attr):
-            if hasattr(param, attr):
+            if _hasattr(param, attr):
                 return ast.Attribute(
                     lineno=1, col_offset=0,
                     value=ast.Name(id=param.name, ctx=ast.Load(),
@@ -126,7 +126,7 @@ class ASTorator(object):
                     annotation=attr(param, 'annotation')))
                 call.args.append(ast.Name(id=param.name, ctx=ast.Load(),
                                           lineno=1, col_offset=0))
-                if hasattr(param, 'default'):
+                if _hasattr(param, 'default'):
                     sig.defaults.append(attr(param, 'default'))
 
             # keyword only
@@ -158,7 +158,7 @@ class ASTorator(object):
             else:
                 raise ValueError("Cannot handle parameter type: %s" % param)
 
-        if hasattr(self.signature, 'return_annotation'):
+        if _hasattr(self.signature, 'return_annotation'):
             retannot_name = scope.reserve('_returns')
             context[retannot_name] = self.signature.return_annotation
             returns = ast.Name(id=retannot_name, ctx=ast.Load(),
