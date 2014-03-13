@@ -446,10 +446,13 @@ class _ParameterBinding(object):
                 if (i in self._pos or p.name in self._kw or
                     p is self._var_pos or p is self._var_kw)]
 
-
-def partial(func=None, *args, **kwargs):
+def partial(*args, **kwargs):
     """
     Create a partial that exactly looks like the original.
+
+    The first positional argument is the function to be wrapped. If set to
+    ``None`` or no positional arguments are given, a lambda will be returned
+    that accepts the function as its first argument.
 
     There are some important differences to functools.partial:
 
@@ -482,8 +485,9 @@ def partial(func=None, *args, **kwargs):
     kwargs, once regularly).
 
     """
-    if func is None:
-        return lambda func: partial(func, *args, **kwargs)
+    if not args or args[0] is None:
+        return lambda func: partial(func, *args[1:], **kwargs)
+    func, args = args[0], args[1:]
 
     # Unwrap functools.partial functions, these are pure evil :(except for
     # their nice performance:)!
