@@ -13,6 +13,7 @@ __all__ = [
     'decorator',
     'value',
     'flatorator',
+    'metapartial',
     'partial',
 ]
 
@@ -446,58 +447,90 @@ class _ParameterBinding(object):
                 if (i in self._pos or p.name in self._kw or
                     p is self._var_pos or p is self._var_kw)]
 
-def partial(*args, **kwargs):
+def metapartial(*args, **kwargs):
     """
-    Create a partial that exactly looks like the original.
+    Prepare some parameters for a partial.
 
-    The first positional argument is the function to be wrapped. If set to
-    ``None`` or no positional arguments are given, a lambda will be returned
-    that accepts the function as its first argument.
+    The returned value can be called like :func:`partial` to bind a
+    function to the parameters given here.
 
-    There are some important differences to functools.partial:
+    Binding further keyword arguments via the returned function will
+    overwrite keyword parameters of previous bindings with the same name.
 
-    - this function returns a function object which looks like the input
-      function, except for the modified parameters.
-
-    - all overwritten parameters are completely removed from the signature.
-      In functools.partial this is true only for arguments bound by position.
-
-    - the **kwargs are stripped first, then *args
-
-        >>> partial(lambda a,b,c: (a,b,c), 2, a=1)(3)
-        (1, 2, 3)
-
-    - by leaving the func argument empty it can act as decorator:
-
-        >>> @partial(None, bar=0)
-        ... def foo(bar):
-        ...     print(bar)
-        >>> foo()
-        0
-
-    **NOTE:** Duplicating the behaviour of functools.partial cannot be done
-    for the sake of python2 compatibility: binding positional arguments by
-    keyword with functools.partial makes them effectively keyword-only
-    parameters, which is not natively supported in python2.
-
-    **CAUTION:** Removing parameters from the signature might have unexpected
-    side effects like a parameter being passed multiple times (once in the
-    kwargs, once regularly).
+    >>> @metapartial(1, a=0, c=3)
+    ... def func(a, b, *args, **kwargs):
+    ...     return (a, b, args, kwargs)
+    >>> func(2)
+    (0, 1, (2,), {'c': 3})
 
     """
-    if not args or args[0] is None:
-        return lambda func: partial(func, *args[1:], **kwargs)
-    func, args = args[0], args[1:]
+    _args, _kwargs = args, kwargs
+    def partial(*args, **kwargs):
+        """
+        Create a partial that exactly looks like the original.
 
+        The first positional argument is the function to be wrapped. If set
+        to ``None`` or no positional arguments are given, a lambda will be
+        returned that accepts the function as its first argument.
+
+        There are some important differences to functools.partial:
+
+        - this function returns a function object which looks like the
+          input function, except for the modified parameters.
+
+        - all overwritten parameters are completely removed from the
+          signature.  In functools.partial this is true only for arguments
+          bound by position.
+
+        - the **kwargs are stripped first, then *args
+
+            >>> partial(lambda a,b,c: (a,b,c), 2, a=1)(3)
+            (1, 2, 3)
+
+        - by leaving the first argument empty it can act as decorator:
+
+            >>> @partial(bar=0)
+            ... def foo(bar):
+            ...     print(bar)
+            >>> foo()
+            0
+
+        **NOTE:** Duplicating the behaviour of functools.partial cannot be
+        done for the sake of python2 compatibility: binding positional
+        arguments by keyword with functools.partial makes them effectively
+        keyword-only parameters, which is not natively supported in
+        python2.
+
+        **CAUTION:** Removing parameters from the signature might have
+        unexpected side effects like a parameter being passed multiple
+        times (once in the kwargs, once regularly).
+
+        """
+        pos = _args + args[1:]
+        kw = _merge_kwargs(_kwargs, kwargs)
+        if not args or args[0] is None:
+            return metapartial(*pos, **kw)
+        return _partial(args[0], pos, kw)
+    return partial
+
+partial = metapartial()
+
+def _merge_kwargs(a, b):
+    if not b:
+        return a
+    if not a:
+        return b
+    kw = a.copy()
+    kw.update(b)
+    return kw
+
+def _partial(func, args, kwargs):
+    """Create the partial for func(*args, **kwargs, ...)."""
     # Unwrap functools.partial functions, these are pure evil :(except for
     # their nice performance:)!
     if isinstance(func, functools.partial):
-        pos = list(func.args) + list(args)
-        if func.keywords:
-            kw = func.keywords.copy()
-            kw.update(kwargs)
-        else:
-            kw = kwargs
+        pos = func.args + args
+        kw = _merge_kwargs(func.keywords, kwargs)
         func = partial(func.func, *pos, **kw)
 
     # NOTE: we can't just use functools.partial/sig.bind_partial to create
