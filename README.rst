@@ -210,8 +210,8 @@ following example:
 .. code:: python
 
     >>> import functools
-    >>> def func(a, b, *args):
-    ...     return (a, b, c, args)
+    >>> def func(a, b, *args, **kwargs):
+    ...     return (a, b, args, kwargs)
     >>> part = functools.partial(func, a=0)
     >>> part(1)
     Traceback (most recent call last):
@@ -228,32 +228,12 @@ For compatibility between python versions and ease of use, I chose to handle
 .. code:: python
 
     >>> wrap = wraps(part)(part)
-    >>> wrap(1)
-    (0, 1, ())
-    >>> wrap(1, a=0)
-    Traceback (most recent call last):
-        ...
-    TypeError: <lambda>() got an unexpected keyword argument 'a'
+    >>> wrap(1, 2, c=3)
+    (0, 1, (2,), {'c':3})
 
-There are two exceptions:
-
-- unlike with ``black_magic.decorator.partial`` the ``*args`` argument stays
-  inaccessible
-
-- Furthermore, the parameter ``a`` can be overwritten if the original
-  function has a ``**kwargs`` argument:
-
-.. code:: python
-
-    >>> def kw_func(a, **kwargs):
-    ...     return (a, kwargs):
-    >>> kw_part = functools.partial(kw_func, a=0)
-    >>> kw_wrap = wraps(kw_part)(kw_part)
-    >>> kw_wrap(a=1)
-    (1, {})
-
-If you use ``functools.partial`` to bind only positional parameters, there
-should be no problem!
+Note, the signature imposed by ``.wraps(functools.partial(f))`` is
+equivalent to the signature of ``.wraps(.partial(f))``, which might come
+unexpected.
 
 
 Tests

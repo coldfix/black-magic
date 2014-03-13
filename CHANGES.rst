@@ -1,6 +1,12 @@
 Changelog
 ~~~~~~~~~
 
+0.0.8
+-----
+
+- convert all ``functools.partial`` to ``black_magic.partial`` with the same
+  parameters.
+
 0.0.7
 -----
 
