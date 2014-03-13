@@ -38,6 +38,7 @@ class ASTorator(object):
         self.filename = filename
         self.assign = assign or {}
         self.update = update or {}
+        self._init()
 
     @classmethod
     def from_function(cls, function, signature=None):
@@ -73,19 +74,7 @@ class ASTorator(object):
                    funcname=funcname, filename=filename,
                    assign=assign, update=update)
 
-    def decorate(self, callback):
-        """
-        Create wrapper for callback.
-
-        The callback may be a function, lambda or any ast.expr.
-
-        """
-        # make functools.partial objects behave nice
-        if isinstance(callback, functools.partial) and callback.keywords:
-            callback = partial(callback)
-
-        # TODO: check whether the callback has compatible signature
-
+    def _init(self):
         scope = common.Scope(self.signature.parameters.keys())
         context = {'__builtins__': __builtins__}
 
@@ -94,13 +83,15 @@ class ASTorator(object):
 
         # Add a value to the context
         empty = self.signature.empty
-        def hasattr(param, attr):
+        def _hasattr(param, attr):
             return not getattr(param, attr, empty) is empty
 
         def attr(param, attr):
-            if hasattr(param, attr):
+            if _hasattr(param, attr):
                 return ast.Attribute(
-                    value=ast.Name(id=param.name, ctx=ast.Load()),
+                    lineno=1, col_offset=0,
+                    value=ast.Name(id=param.name, ctx=ast.Load(),
+                                   lineno=1, col_offset=0),
                     attr=attr,
                     ctx=ast.Load())
             else:
@@ -116,7 +107,9 @@ class ASTorator(object):
             defaults=[],
             kw_defaults=[])
         call = ast.Call(
-            func=ast.Name(id=callback_name, ctx=ast.Load()),
+            lineno=1, col_offset=0,
+            func=ast.Name(id=callback_name, ctx=ast.Load(),
+                          lineno=1, col_offset=0),
             args=[],
             keywords=[],
             starargs=None,
@@ -128,47 +121,81 @@ class ASTorator(object):
             # positional parameters
             if param.kind == param.POSITIONAL_OR_KEYWORD:
                 sig.args.append(compat.ast_arg(
+                    lineno=1, col_offset=0,
                     arg=param.name,
                     annotation=attr(param, 'annotation')))
-                call.args.append(ast.Name(id=param.name, ctx=ast.Load()))
-                if hasattr(param, 'default'):
+                call.args.append(ast.Name(id=param.name, ctx=ast.Load(),
+                                          lineno=1, col_offset=0))
+                if _hasattr(param, 'default'):
                     sig.defaults.append(attr(param, 'default'))
 
             # keyword only
             elif param.kind == param.KEYWORD_ONLY:
                 sig.kwonlyargs.append(compat.ast_arg(
+                    lineno=1, col_offset=0,
                     arg=param.name,
                     annotation=attr(param, 'annotation')))
                 call.keywords.append(ast.keyword(
                     arg=param.name,
-                    value=ast.Name(id=param.name, ctx=ast.Load())))
+                    value=ast.Name(id=param.name, ctx=ast.Load(),
+                                   lineno=1, col_offset=0)))
                 sig.kw_defaults.append(attr(param, 'default'))
 
             # varargs
             elif param.kind == param.VAR_POSITIONAL:
                 sig.vararg = param.name
                 sig.varargannotation = attr(param, 'annotation')
-                call.starargs = ast.Name(id=param.name, ctx=ast.Load())
+                call.starargs = ast.Name(id=param.name, ctx=ast.Load(),
+                                         lineno=1, col_offset=0)
 
             # kwargs
             elif param.kind == param.VAR_KEYWORD:
                 sig.kwarg = param.name
                 sig.kwargannotation = attr(param, 'annotation')
-                call.kwargs = ast.Name(id=param.name, ctx=ast.Load())
+                call.kwargs = ast.Name(id=param.name, ctx=ast.Load(),
+                                       lineno=1, col_offset=0)
 
             else:
                 raise ValueError("Cannot handle parameter type: %s" % param)
 
-        if hasattr(self.signature, 'return_annotation'):
+        if _hasattr(self.signature, 'return_annotation'):
             retannot_name = scope.reserve('_returns')
             context[retannot_name] = self.signature.return_annotation
-            returns = ast.Name(id=retannot_name, ctx=ast.Load())
+            returns = ast.Name(id=retannot_name, ctx=ast.Load(),
+                               lineno=1, col_offset=0)
         else:
             returns = None
 
+        self._call = call
+        self._sig = sig
+        self._context = context
+        self._callback_name = callback_name
+        self._filename = filename
+        self._returns = returns
+
+    def decorate(self, callback):
+        """
+        Create wrapper for callback.
+
+        The callback may be a function, lambda or any ast.expr.
+
+        """
+        call = self._call
+        sig = self._sig
+        context = self._context
+        callback_name = self._callback_name
+        filename = self._filename
+        returns = self._returns
+
+        # make functools.partial objects behave nice
+        if isinstance(callback, functools.partial) and callback.keywords:
+            callback = partial(callback)
+
+        # TODO: check whether the callback has compatible signature
+
         # THIS IS SOMEWHAT DANGEROUS, BUT ALSO REALLY COOL:
         if isinstance(callback, ast.expr):
-            call = callback
+            call = ast.fix_missing_locations(callback)
 
         # custom expression generator
         elif isinstance(callback, Value):
@@ -183,22 +210,25 @@ class ASTorator(object):
         loc = {}
         if self.funcname is None:
             expr = ast.Expression(body=ast.Lambda(
+                lineno=1, col_offset=0,
                 args=sig,
                 body=call
             ))
-            code = compile(ast.fix_missing_locations(expr), filename, 'eval')
+            code = compile((expr), filename, 'eval')
             return self._update(eval(code, context, loc))
 
         else:
             expr = ast.Module(body=[
                 ast.FunctionDef(
+                    lineno=1, col_offset=0,
                     name=self.funcname,
                     args=sig,
-                    body=[ast.Return(value=call)],
+                    body=[ast.Return(value=call,
+                                     lineno=1, col_offset=0)],
                     decorator_list=[],
                     returns=returns)
             ])
-            code = compile(ast.fix_missing_locations(expr), filename, 'exec')
+            code = compile((expr), filename, 'exec')
             compat.exec_compat(code, context, loc)
             return self._update(loc[self.funcname])
 
@@ -316,7 +346,8 @@ class Value(object):
         self.value = value
 
     def ast(self, value_name):
-        return ast.Name(id=value_name, ctx=ast.Load())
+        return ast.Name(id=value_name, ctx=ast.Load(),
+                        lineno=1, col_offset=0)
 
 def value(val):
     """
@@ -341,11 +372,11 @@ def value(val):
     """
     t = type(val)
     if t is int or t is float:
-        return ast.Num(n=val)
+        return ast.Num(n=val, lineno=1, col_offset=0)
     elif t is str:
-        return ast.Str(s=val)
+        return ast.Str(s=val, lineno=1, col_offset=0)
     elif t is bytes:
-        return ast.Bytes(s=val)
+        return ast.Bytes(s=val, lineno=1, col_offset=0)
     else:
         return Value(val)
 
