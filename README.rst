@@ -134,6 +134,12 @@ There are some differences, though:
       >>> foo()
       (0, 1)
 
+- Note, that the function returned by ``partial(None, ...)`` is just like
+  ``partial``: it can bind additional arguments and you can still leave the
+  first parameter unspecified. This has weird properties and should not be
+  used in production code, but I thought it would be great to add some
+  additional brainfuck, to see where it will go.
+
 **CAUTION:** Iterative invocation of ``partial`` (with ``None`` as first
 argument) doesn't hide parameters the same way that ``partial`` applied to
 a function does, i.e. you can move bound arguments to the right in later
