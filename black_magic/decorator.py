@@ -77,7 +77,7 @@ class ASTorator(object):
 
     def _init(self):
         scope = common.Scope(self.signature.parameters.keys())
-        context = {'__builtins__': __builtins__}
+        context = {}
 
         filename = '<wraps(%s:%s)>' % (self.filename or '?', self.funcname)
         callback_name = scope.reserve('_call')
@@ -183,7 +183,7 @@ class ASTorator(object):
         """
         call = self._call
         sig = self._sig
-        context = self._context
+        context = self._context.copy()
         callback_name = self._callback_name
         filename = self._filename
         returns = self._returns

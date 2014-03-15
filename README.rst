@@ -124,29 +124,41 @@ There are some differences, though:
       >>> partial(lambda a,b,c: (a,b,c), 2, a=1)(3)
       (1, 2, 3)
 
-- by leaving the ``func`` argument empty ``partial`` can act as decorator:
+- by leaving the first argument empty ``partial`` can act as decorator:
 
   .. code:: python
 
-      >>> @partial(None, bar=0)
-      ... def foo(bar):
-      ...     print(bar)
+      >>> @partial(None, 1, bar=0)
+      ... def foo(bar, lum):
+      ...     return bar, lum
       >>> foo()
-      0
+      (0, 1)
+
+- Note, that the function returned by ``partial(None, ...)`` is just like
+  ``partial``: it can bind additional arguments and you can still leave the
+  first parameter unspecified. This has weird properties and should not be
+  used in production code, but I thought it would be great to add some
+  additional brainfuck, to see where it will go.
 
 **CAUTION:** Iterative invocation of ``partial`` (with ``None`` as first
 argument) doesn't hide parameters the same way that ``partial`` applied to
 a function does, i.e. you can move bound arguments to the right in later
-calls:
+calls. In code:
+
+.. code:: python
+
+    >>> partial(None, 1)(a=0)(lambda a, b: (a, b))()
+    (0, 1)
 
 
 .metapartial()
 --------------
 
 The returned value can be called like ``partial`` bind a function to the
-parameters given here. Binding further keyword arguments via the returned
-function will overwrite keyword parameters of previous bindings with the
-same name.
+parameters given here. In fact, ``partial = metapartial()``.
+
+Binding further keyword arguments via the returned function will overwrite
+keyword parameters of previous bindings with the same name.
 
 .. code:: python
 
@@ -155,8 +167,6 @@ same name.
     ...     return (a, b, args, kwargs)
     >>> func(2)
     (0, 1, (2,), {'c': 3})
-
-In fact ``partial = metapartial()``.
 
 
 .decorator()
