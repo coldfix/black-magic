@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 import functools
 import black_magic.decorator
 from test.benchmark import _common

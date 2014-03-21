@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 import decorator
 import black_magic.decorator
 
