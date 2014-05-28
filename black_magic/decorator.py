@@ -123,16 +123,17 @@ class ASTorator(object):
             starargs=None,
             kwargs=None)
 
-        for param in self.signature.parameters.values():
-            context[param.name] = param
+        for name, param in self.signature.parameters.items():
+
+            context[name] = param
 
             # positional parameters
             if param.kind == param.POSITIONAL_OR_KEYWORD:
                 sig.args.append(compat.ast_arg(
                     lineno=1, col_offset=0,
-                    arg=param.name,
+                    arg=name,
                     annotation=attr(param, 'annotation')))
-                call.args.append(ast.Name(id=param.name, ctx=ast.Load(),
+                call.args.append(ast.Name(id=name, ctx=ast.Load(),
                                           lineno=1, col_offset=0))
                 if _hasattr(param, 'default'):
                     sig.defaults.append(attr(param, 'default'))
@@ -141,26 +142,26 @@ class ASTorator(object):
             elif param.kind == param.KEYWORD_ONLY:
                 sig.kwonlyargs.append(compat.ast_arg(
                     lineno=1, col_offset=0,
-                    arg=param.name,
+                    arg=name,
                     annotation=attr(param, 'annotation')))
                 call.keywords.append(ast.keyword(
-                    arg=param.name,
-                    value=ast.Name(id=param.name, ctx=ast.Load(),
+                    arg=name,
+                    value=ast.Name(id=name, ctx=ast.Load(),
                                    lineno=1, col_offset=0)))
                 sig.kw_defaults.append(attr(param, 'default'))
 
             # varargs
             elif param.kind == param.VAR_POSITIONAL:
-                sig.vararg = param.name
+                sig.vararg = name
                 sig.varargannotation = attr(param, 'annotation')
-                call.starargs = ast.Name(id=param.name, ctx=ast.Load(),
+                call.starargs = ast.Name(id=name, ctx=ast.Load(),
                                          lineno=1, col_offset=0)
 
             # kwargs
             elif param.kind == param.VAR_KEYWORD:
-                sig.kwarg = param.name
+                sig.kwarg = name
                 sig.kwargannotation = attr(param, 'annotation')
-                call.kwargs = ast.Name(id=param.name, ctx=ast.Load(),
+                call.kwargs = ast.Name(id=name, ctx=ast.Load(),
                                        lineno=1, col_offset=0)
 
             else:
