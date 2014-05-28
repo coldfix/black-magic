@@ -21,7 +21,7 @@ else:                   # python3
 # invoke distutils
 setup(
     name='black-magic',
-    version='0.0.9',
+    version='0.0.10',
     description='Decorator utility that operates on black magic',
     long_description=long_description,
     author='Thomas Gläßle',
