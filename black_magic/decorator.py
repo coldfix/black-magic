@@ -3,9 +3,10 @@ Decorator utility for function decorators that works using ast.
 
 This is intented to be a utility for signature preserving function
 decorators.
-
 """
+
 from __future__ import absolute_import
+
 
 __all__ = [
     'ASTorator',
@@ -17,6 +18,7 @@ __all__ = [
     'partial',
 ]
 
+
 import ast
 import inspect
 import functools
@@ -26,12 +28,13 @@ from . import common
 
 
 class ASTorator(object):
+
     """
     Creates wapper functions with specific signature.
 
     Uses abstract syntax trees for dynamic code generation.
-
     """
+
     def __init__(self, signature, funcname=None, filename=None,
                  assign=None, update=None):
         self.signature = signature
@@ -43,6 +46,7 @@ class ASTorator(object):
 
     @classmethod
     def from_function(cls, function, signature=None):
+
         """
         Create a wrapper function generator from the given function.
 
@@ -50,8 +54,8 @@ class ASTorator(object):
         different from the signature of ``function``. In this case,
         ``function`` will only be used to copy docstring and other
         information.
-
         """
+
         # this actually changes the signature for functools.partials
         # effectively, but it plays nicely with the rest of this library:
         if isinstance(function, functools.partial) and function.keywords:
@@ -76,6 +80,9 @@ class ASTorator(object):
                    assign=assign, update=update)
 
     def _init(self):
+
+        """Create signature and call ast."""
+
         scope = common.Scope(self.signature.parameters.keys())
         context = {}
 
@@ -116,16 +123,17 @@ class ASTorator(object):
             starargs=None,
             kwargs=None)
 
-        for param in self.signature.parameters.values():
-            context[param.name] = param
+        for name, param in self.signature.parameters.items():
+
+            context[name] = param
 
             # positional parameters
             if param.kind == param.POSITIONAL_OR_KEYWORD:
                 sig.args.append(compat.ast_arg(
                     lineno=1, col_offset=0,
-                    arg=param.name,
+                    arg=name,
                     annotation=attr(param, 'annotation')))
-                call.args.append(ast.Name(id=param.name, ctx=ast.Load(),
+                call.args.append(ast.Name(id=name, ctx=ast.Load(),
                                           lineno=1, col_offset=0))
                 if _hasattr(param, 'default'):
                     sig.defaults.append(attr(param, 'default'))
@@ -134,26 +142,26 @@ class ASTorator(object):
             elif param.kind == param.KEYWORD_ONLY:
                 sig.kwonlyargs.append(compat.ast_arg(
                     lineno=1, col_offset=0,
-                    arg=param.name,
+                    arg=name,
                     annotation=attr(param, 'annotation')))
                 call.keywords.append(ast.keyword(
-                    arg=param.name,
-                    value=ast.Name(id=param.name, ctx=ast.Load(),
+                    arg=name,
+                    value=ast.Name(id=name, ctx=ast.Load(),
                                    lineno=1, col_offset=0)))
                 sig.kw_defaults.append(attr(param, 'default'))
 
             # varargs
             elif param.kind == param.VAR_POSITIONAL:
-                sig.vararg = param.name
-                sig.varargannotation = attr(param, 'annotation')
-                call.starargs = ast.Name(id=param.name, ctx=ast.Load(),
+                compat.ast_set_special_arg('vararg', sig,
+                                           name, attr(param, 'annotation'))
+                call.starargs = ast.Name(id=name, ctx=ast.Load(),
                                          lineno=1, col_offset=0)
 
             # kwargs
             elif param.kind == param.VAR_KEYWORD:
-                sig.kwarg = param.name
-                sig.kwargannotation = attr(param, 'annotation')
-                call.kwargs = ast.Name(id=param.name, ctx=ast.Load(),
+                compat.ast_set_special_arg('kwarg', sig,
+                                           name, attr(param, 'annotation'))
+                call.kwargs = ast.Name(id=name, ctx=ast.Load(),
                                        lineno=1, col_offset=0)
 
             else:
@@ -175,12 +183,13 @@ class ASTorator(object):
         self._returns = returns
 
     def decorate(self, callback):
+
         """
         Create wrapper for callback.
 
         The callback may be a function, lambda or any ast.expr.
-
         """
+
         call = self._call
         sig = self._sig
         context = self._context.copy()
@@ -229,7 +238,7 @@ class ASTorator(object):
                     decorator_list=[],
                     returns=returns)
             ])
-            code = compile((expr), filename, 'exec')
+            code = compile(expr, filename, 'exec')
             compat.exec_compat(code, context, loc)
             return self._update(loc[self.funcname])
 
@@ -244,15 +253,11 @@ class ASTorator(object):
 
 
     def decorate_with_boundargspec(self, function):
-        """
-        Create wrapper that calls function with a BoundArgSpec.
-        """
+        """Create wrapper that calls function with a BoundArgSpec."""
         raise NotImplementedError()
 
     def decorate_with_boundargs(self, function):
-        """
-        Create a wrapper that calls function with a BoundArgs.
-        """
+        """Create a wrapper that calls function with a BoundArgs."""
         return self.decorate(
             lambda *args, **kwargs:
                 function(self.signature.bind(*args, **kwargs)))
@@ -283,7 +288,6 @@ def wraps(function=None, wrapper=None, signature=None):
     >>> fake = wraps(real, lambda a: real(a))
     >>> fake() is real()
     True
-
     """
     # defer creation of the actual function wrapper until called again
     # (this is for use as a decorator)
@@ -311,7 +315,6 @@ def decorator(decorator):
 
     >>> mul_plus_one(2, 3)
     7
-
     """
     @wraps(decorator)
     def decorate(function):
@@ -332,7 +335,6 @@ def flatorator(flatorator):
 
     >>> add_times_two(1, 2)
     6
-
     """
     def decorator(fn):
         @wraps(fn)
@@ -343,6 +345,9 @@ def flatorator(flatorator):
 
 
 class Value(object):
+
+    """Always return a constant value."""
+
     def __init__(self, value):
         self.value = value
 
@@ -369,7 +374,6 @@ def value(val):
     >>> x = []
     >>> fake = wraps(real)(value(x))
     >>> assert fake(0) is x
-
     """
     t = type(val)
     if t is int or t is float:
@@ -384,6 +388,9 @@ def value(val):
 
 
 class _ParameterBinding(object):
+
+    """Custom parameter binding algorithm."""
+
     def __init__(self,
                  parameters,
                  pos, kw,
@@ -478,7 +485,9 @@ class _ParameterBinding(object):
                 if (i in self._pos or p.name in self._kw or
                     p is self._var_pos or p is self._var_kw)]
 
+
 def metapartial(*args, **kwargs):
+
     """
     Prepare some parameters for a partial.
 
@@ -493,9 +502,10 @@ def metapartial(*args, **kwargs):
     ...     return (a, b, args, kwargs)
     >>> func(2)
     (0, 1, (2,), {'c': 3})
-
     """
+
     _args, _kwargs = args, kwargs
+
     def partial(*args, **kwargs):
         """
         Create a partial that exactly looks like the original.
@@ -546,16 +556,18 @@ def metapartial(*args, **kwargs):
 
         This might be changed in future versions, so don't rely on this
         behaviour.
-
         """
         pos = _args + args[1:]
         kw = _merge_kwargs(_kwargs, kwargs)
         if not args or args[0] is None:
             return metapartial(*pos, **kw)
         return _partial(args[0], pos, kw)
+
     return partial
 
+
 partial = metapartial()
+
 
 def _merge_kwargs(a, b):
     if not b:
@@ -565,6 +577,7 @@ def _merge_kwargs(a, b):
     kw = a.copy()
     kw.update(b)
     return kw
+
 
 def _partial(func, args, kwargs):
     """Create the partial for func(*args, **kwargs, ...)."""

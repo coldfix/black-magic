@@ -4,13 +4,19 @@ Compatibility wrappers for python2.
 
 Provides replacements for python3 functions for a consistent interface on
 both languages.
-
 """
+
+
 __all__ = ['signature', 'Signature',
            'getfullargspec', 'FullArgSpec',
            'ast_arg',
+           'ast_set_special_arg',
            'exec_compat',
            'is_identifier']
+
+
+import sys
+
 
 # Python2 has no annotations and kwonly arguments, therefore we need to
 # create a version of getargspec that returns dummy variables
@@ -33,6 +39,7 @@ except ImportError:
             kwonlyargs=[], kwonlydefaults=None,
             annotations={})
 
+
 # Python3 introduces the new inspect.Signature type which is much easier to
 # work with than FullArgSpec.
 try:
@@ -50,6 +57,16 @@ except ImportError:
     import ast
     def ast_arg(arg, annotation, **kwargs):
         return ast.Name(id=arg, ctx=ast.Param(), **kwargs)
+
+
+# Python3.4 uses an ast.arg for ast.arguments.kwarg(annotation).
+if sys.version_info >= (3, 4):
+    def ast_set_special_arg(kind, arguments, name, annotation):
+        setattr(arguments, kind, ast_arg(arg=name, annotation=annotation))
+else:
+    def ast_set_special_arg(kind, arguments, name, annotation):
+        setattr(arguments, kind, name)
+        setattr(arguments, kind + 'annotation', annotation)
 
 
 def exec_compat(expression, globals, locals=None):
@@ -75,7 +92,6 @@ def exec_compat(expression, globals, locals=None):
 
     http://docs.python.org/2/reference/simple_stmts.html#the-exec-statement
     http://docs.python.org/3.3/library/functions.html?highlight=exec#exec
-
     """
     exec(expression, globals, locals)
 
@@ -87,6 +103,7 @@ try:
     _identifier_regex = re.compile(r"^[^\d\W]\w*\Z", re.UNICODE)
 except SyntaxError:
     _identifier_regex = re.compile(r"^[^\d\W]\w*\Z")
+
 
 def is_identifier(name):
     return _identifier_regex.match(name) is not None
