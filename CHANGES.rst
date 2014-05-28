@@ -1,6 +1,11 @@
 Changelog
 ~~~~~~~~~
 
+0.0.10
+------
+
+- add compatibility with python3.4
+
 0.0.9
 -----
 

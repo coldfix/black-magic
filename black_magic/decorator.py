@@ -152,15 +152,15 @@ class ASTorator(object):
 
             # varargs
             elif param.kind == param.VAR_POSITIONAL:
-                sig.vararg = name
-                sig.varargannotation = attr(param, 'annotation')
+                compat.ast_set_special_arg('vararg', sig,
+                                           name, attr(param, 'annotation'))
                 call.starargs = ast.Name(id=name, ctx=ast.Load(),
                                          lineno=1, col_offset=0)
 
             # kwargs
             elif param.kind == param.VAR_KEYWORD:
-                sig.kwarg = name
-                sig.kwargannotation = attr(param, 'annotation')
+                compat.ast_set_special_arg('kwarg', sig,
+                                           name, attr(param, 'annotation'))
                 call.kwargs = ast.Name(id=name, ctx=ast.Load(),
                                        lineno=1, col_offset=0)
 

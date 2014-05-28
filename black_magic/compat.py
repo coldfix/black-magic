@@ -10,8 +10,12 @@ both languages.
 __all__ = ['signature', 'Signature',
            'getfullargspec', 'FullArgSpec',
            'ast_arg',
+           'ast_set_special_arg',
            'exec_compat',
            'is_identifier']
+
+
+import sys
 
 
 # Python2 has no annotations and kwonly arguments, therefore we need to
@@ -53,6 +57,16 @@ except ImportError:
     import ast
     def ast_arg(arg, annotation, **kwargs):
         return ast.Name(id=arg, ctx=ast.Param(), **kwargs)
+
+
+# Python3.4 uses an ast.arg for ast.arguments.kwarg(annotation).
+if sys.version_info >= (3, 4):
+    def ast_set_special_arg(kind, arguments, name, annotation):
+        setattr(arguments, kind, ast_arg(arg=name, annotation=annotation))
+else:
+    def ast_set_special_arg(kind, arguments, name, annotation):
+        setattr(arguments, kind, name)
+        setattr(arguments, kind + 'annotation', annotation)
 
 
 def exec_compat(expression, globals, locals=None):
