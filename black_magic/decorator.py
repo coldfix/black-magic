@@ -291,12 +291,16 @@ def wraps(function=None, wrapper=None, signature=None):
     """
     # defer creation of the actual function wrapper until called again
     # (this is for use as a decorator)
-    if wrapper is None:
-        return lambda wrapper, signature=signature: wraps(function, wrapper, signature)
-    if function is None:
+    if function is not None:
+        decorator = ASTorator.from_function(function, signature=signature)
+        if wrapper is None:
+            return decorator.decorate
+        else:
+            return decorator.decorate(wrapper)
+    elif wrapper is not None:
         return lambda function, signature=signature: wraps(function, wrapper, signature)
-
-    return ASTorator.from_function(function, signature=signature)(wrapper)
+    else:
+        raise TypeError("Missing argument.")
 
 
 def decorator(decorator):
