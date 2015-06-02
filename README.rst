@@ -11,15 +11,15 @@ black-magic
    :target: https://coveralls.io/r/coldfix/black-magic
    :alt: Coverage
 
-.. |Version| image:: https://pypip.in/v/black-magic/badge.png
+.. |Version| image:: http://coldfix.de:8080/v/black-magic/badge.png
    :target: https://pypi.python.org/pypi/black-magic/
    :alt: Latest Version
 
-.. |Downloads| image:: https://pypip.in/d/black-magic/badge.png
+.. |Downloads| image:: http://coldfix.de:8080/d/black-magic/badge.png
    :target: https://pypi.python.org/pypi/black-magic/
    :alt: Downloads
 
-.. |License| image:: https://pypip.in/license/black-magic/badge.png
+.. |License| image:: http://coldfix.de:8080/license/black-magic/badge.png
    :target: https://pypi.python.org/pypi/black_magic/
    :alt: License
 
