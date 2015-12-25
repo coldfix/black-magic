@@ -1,7 +1,7 @@
 black-magic
 ===========
 
-|Build Status| |Coverage| |Version| |Downloads| |License|
+|Build Status| |Coverage| |Version| |Downloads| |Unlicense|
 
 .. |Build Status| image:: https://api.travis-ci.org/coldfix/black-magic.png?branch=master
    :target: https://travis-ci.org/coldfix/black-magic
@@ -19,9 +19,9 @@ black-magic
    :target: https://pypi.python.org/pypi/black-magic/
    :alt: Downloads
 
-.. |License| image:: http://coldfix.de:8080/license/black-magic/badge.png
-   :target: https://pypi.python.org/pypi/black_magic/
-   :alt: License
+.. |Unlicense| image:: http://coldfix.de:8080/license/black-magic/badge.svg
+   :target: http://unlicense.org/
+   :alt: Unlicense
 
 
 Metaprogramming modules that operate on black magic!

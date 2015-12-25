@@ -10,7 +10,7 @@ __uri__ = 'https://github.com/coldfix/black-magic'
 __author__ = 'Thomas Gläßle'
 __author_email__ = 't_glaessle@gmx.de'
 
-__license__ = 'Public Domain'
+__license__ = 'Unlicense'
 __copyright__ = '(c) 2013-2015 Thomas Gläßle'
 
 __classifiers__ = [
@@ -25,5 +25,5 @@ __classifiers__ = [
     'Programming Language :: Python :: 3.4',
     'Programming Language :: Python :: 3.5',
     'Topic :: Software Development',
-    'License :: CC0 1.0 Universal (CC0 1.0) Public Domain Dedication',
+    'License :: Public Domain',
 ]
