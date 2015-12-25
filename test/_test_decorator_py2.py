@@ -191,3 +191,7 @@ class TestASTorator(unittest.TestCase, _TestUtil):
         self.assertRaises(TypeError, w2)
         self.assertRaises(TypeError, w2, 2, b=2)
         self.assertRaises(TypeError, w2, 0, 2, d=3)
+
+
+if __name__ == '__main__':
+    unittest.main()

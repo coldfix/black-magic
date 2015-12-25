@@ -9,3 +9,7 @@ try:
     from test._test_decorator_py3 import TestASToratorPy3
 except SyntaxError:
     pass
+
+
+if __name__ == '__main__':
+    unittest.main()

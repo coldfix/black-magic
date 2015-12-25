@@ -99,3 +99,7 @@ class TestPartial(unittest.TestCase, _TestBase):
                          wrap('a', c='c', d='d'))
         self.assertRaises(TypeError, wrap, 'a', 'c', b='b')
         self.assertRaises(TypeError, wrap, 'a')
+
+
+if __name__ == '__main__':
+    unittest.main()
