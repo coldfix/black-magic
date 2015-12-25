@@ -41,7 +41,7 @@ metaprogramming tools. Furthermore, it knows how to copy the signature
 exactly, even remembering object identity of default arguments and
 annotations:
 
-.. code:: python
+.. code-block:: python
 
     >>> from black_magic.decorator import wraps
 
@@ -60,7 +60,7 @@ annotations:
 
 If you want to get real crazy you can even use ast.expr_'s:
 
-.. code:: python
+.. code-block:: python
 
     >>> import ast
     >>> fake = wraps(real)(ast.Num(n=1))
@@ -79,7 +79,7 @@ this module, make sure to read the warning below!
 
 This is similar to the ``functools.partial`` function.
 
-.. code:: python
+.. code-block:: python
 
     >>> from black_magic.decorator import partial
 
@@ -98,14 +98,14 @@ There are some differences, though:
 
 - the ``**kwargs`` are stripped first, then ``*args``
 
-  .. code:: python
+  .. code-block:: python
 
       >>> partial(lambda a,b,c: (a,b,c), 2, a=1)(3)
       (1, 2, 3)
 
 - by leaving the first argument empty ``partial`` can act as decorator:
 
-  .. code:: python
+  .. code-block:: python
 
       >>> @partial(None, 1, bar=0)
       ... def foo(bar, lum):
@@ -124,7 +124,7 @@ argument) doesn't hide parameters the same way that ``partial`` applied to
 a function does, i.e. you can move bound arguments to the right in later
 calls. In code:
 
-.. code:: python
+.. code-block:: python
 
     >>> partial(None, 1)(a=0)(lambda a, b: (a, b))()
     (0, 1)
@@ -139,7 +139,7 @@ parameters given here. In fact, ``partial = metapartial()``.
 Binding further keyword arguments via the returned function will overwrite
 keyword parameters of previous bindings with the same name.
 
-.. code:: python
+.. code-block:: python
 
     >>> @metapartial(1, a=0, c=3)
     ... def func(a, b, *args, **kwargs):
@@ -153,7 +153,7 @@ keyword parameters of previous bindings with the same name.
 
 This is the canonic utility to create decorators:
 
-.. code:: python
+.. code-block:: python
 
     >>> from black_magic.decorator import decorator
 
@@ -177,7 +177,7 @@ This is the canonic utility to create decorators:
 ``flatorator`` imitates the functionality of the well known `decorator`_
 module.
 
-.. code:: python
+.. code-block:: python
 
     >>> from black_magic.decorator import flatorator
 
@@ -220,7 +220,7 @@ very unsensible handling of arguments that are bound by keyword. These, and
 all subsequent arguments, become keyword-only parameters. Consider the
 following example:
 
-.. code:: python
+.. code-block:: python
 
     >>> import functools
     >>> def func(a, b, *args, **kwargs):
@@ -238,7 +238,7 @@ For compatibility between python versions and ease of use, I chose to handle
 ``functools.partial`` objects as if you had actually used
 ``black_magic.decorator.partial`` with the same arguments, i.e.:
 
-.. code:: python
+.. code-block:: python
 
     >>> wrap = wraps(part)(part)
     >>> wrap(1, 2, c=3)
