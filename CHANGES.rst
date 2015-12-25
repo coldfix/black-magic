@@ -1,6 +1,12 @@
 Changelog
 ~~~~~~~~~
 
+0.0.11
+------
+Date: 25.12.2015
+
+- add support for python 3.5
+
 0.0.10
 ------
 

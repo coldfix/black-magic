@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 
 __title__ = 'black-magic'
-__version__ = '0.0.10'
+__version__ = '0.0.11'
 
 __summary__ = 'Decorator utility that operates on black magic'
 __uri__ = 'https://github.com/coldfix/black-magic'
