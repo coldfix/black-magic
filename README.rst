@@ -273,23 +273,7 @@ unexpected.
 Tests
 ~~~~~
 
-This module has been tested to work on python{2.6, 2.7, 3.2, 3.3} and
-PyPy1.9 using `Travis CI`_.
+This module has been tested to work on python{2.6, 2.7, 3.3, 3.4, 3.5}
+and PyPy1.9 using `Travis CI`_, and tested with python 3.2 locally.
 
 .. _Travis CI: https://travis-ci.org/
-
-
-License
-~~~~~~~
-
-To the extent possible under law, Thomas Gläßle has waived all copyright
-and related or neighboring rights to black-magic. This work is published
-from: Germany.
-
-To the extent possible under law, the person who associated CC0 with
-black-magic has waived all copyright and related or neighboring rights
-to black-magic.
-
-You should have received a copy of the CC0 legalcode along with this
-work. If not, see http://creativecommons.org/publicdomain/zero/1.0/.
-
