@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # encoding: utf-8
 from setuptools import setup
+from distutils.util import convert_path
 
 # read long_description from README.rst
 long_description = None
@@ -18,33 +19,29 @@ else:                   # python3
     install_requires = []
 
 
+def exec_file(path):
+    """Execute a python file and return the `globals` dictionary."""
+    namespace = {}
+    with open(convert_path(path), 'rb') as f:
+        exec(f.read(), namespace, namespace)
+    return namespace
+
+metadata = exec_file('black_magic/__init__.py')
+
+
 # invoke distutils
 setup(
-    name='black-magic',
-    version='0.0.10',
-    description='Decorator utility that operates on black magic',
+    name=metadata['__title__'],
+    version=metadata['__version__'],
+    description=metadata['__summary__'],
     long_description=long_description,
-    author='Thomas Gläßle',
-    author_email='t_glaessle@gmx.de',
-    url='https://github.com/coldfix/black-magic',
-    license='Public Domain',
+    author=metadata['__author__'],
+    author_email=metadata['__author_email__'],
+    url=metadata['__uri__'],
+    license=metadata['__license__'],
     packages=['black_magic'],
     install_requires=install_requires,
-    classifiers=[
-        'Development Status :: 3 - Alpha',
-        'Intended Audience :: Developers',
-        'Operating System :: OS Independent',
-        'Programming Language :: Python',
-        'Programming Language :: Python :: 2.6',
-        'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3.2',
-        'Programming Language :: Python :: 3.3',
-        'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: 3.5',
-        'Topic :: Software Development',
-        'License :: CC0 1.0 Universal (CC0 1.0) Public Domain Dedication',
-    ],
+    classifiers=metadata['__classifiers__'],
     test_suite='nose.collector',
     tests_require='nose',
 )
-
