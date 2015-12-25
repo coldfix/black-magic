@@ -1,22 +1,22 @@
 black-magic
 ===========
 
-|Build Status| |Coverage| |Version| |Downloads| |Unlicense|
+|Tests| |Coverage| |Version| |Downloads| |Unlicense|
 
-.. |Build Status| image:: https://api.travis-ci.org/coldfix/black-magic.png?branch=master
+.. |Tests| image:: https://api.travis-ci.org/coldfix/black-magic.svg?branch=master
    :target: https://travis-ci.org/coldfix/black-magic
-   :alt: Build Status
+   :alt: Tests
 
-.. |Coverage| image:: https://coveralls.io/repos/coldfix/black-magic/badge.png?branch=master
+.. |Coverage| image:: https://coveralls.io/repos/coldfix/black-magic/badge.svg?branch=master
    :target: https://coveralls.io/r/coldfix/black-magic
    :alt: Coverage
 
-.. |Version| image:: http://coldfix.de:8080/v/black-magic/badge.png
+.. |Version| image:: http://coldfix.de:8080/v/black-magic/badge.svg
    :target: https://pypi.python.org/pypi/black-magic/
    :alt: Latest Version
 
-.. |Downloads| image:: http://coldfix.de:8080/d/black-magic/badge.png
-   :target: https://pypi.python.org/pypi/black-magic/
+.. |Downloads| image:: http://coldfix.de:8080/d/black-magic/badge.svg
+   :target: https://pypi.python.org/pypi/black-magic/#downloads
    :alt: Downloads
 
 .. |Unlicense| image:: http://coldfix.de:8080/license/black-magic/badge.svg
