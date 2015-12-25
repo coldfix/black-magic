@@ -66,3 +66,7 @@ class TestASToratorPy3(unittest.TestCase, _TestUtil):
         self.must_fail(a=0)
         self.must_fail(0, 4)
         self.must_fail(0, 4, b=1)
+
+
+if __name__ == '__main__':
+    unittest.main()

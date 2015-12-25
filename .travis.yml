@@ -12,6 +12,6 @@ install:
   - python setup.py sdist
   - pip install $(ls ./dist/*.tar.gz | sort -rV | head -n1)
 script:
-  - coverage run --source=black_magic setup.py nosetests
+  - coverage run --source=black_magic setup.py nosetests --with-doctest --exclude=benchmark
 after_success:
   - coveralls

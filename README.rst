@@ -3,27 +3,6 @@ black-magic
 
 |Tests| |Coverage| |Version| |Downloads| |Unlicense|
 
-.. |Tests| image:: https://api.travis-ci.org/coldfix/black-magic.svg?branch=master
-   :target: https://travis-ci.org/coldfix/black-magic
-   :alt: Tests
-
-.. |Coverage| image:: https://coveralls.io/repos/coldfix/black-magic/badge.svg?branch=master
-   :target: https://coveralls.io/r/coldfix/black-magic
-   :alt: Coverage
-
-.. |Version| image:: http://coldfix.de:8080/v/black-magic/badge.svg
-   :target: https://pypi.python.org/pypi/black-magic/
-   :alt: Latest Version
-
-.. |Downloads| image:: http://coldfix.de:8080/d/black-magic/badge.svg
-   :target: https://pypi.python.org/pypi/black-magic/#downloads
-   :alt: Downloads
-
-.. |Unlicense| image:: http://coldfix.de:8080/license/black-magic/badge.svg
-   :target: http://unlicense.org/
-   :alt: Unlicense
-
-
 Metaprogramming modules that operate on black magic!
 
 Currently there is only one module available. However, I am all open for
@@ -33,16 +12,12 @@ cool ideas.
 black_magic.decorator
 ~~~~~~~~~~~~~~~~~~~~~
 
-This is intended to become a more modern and flexible replacement for the
-the well known decorator_ module.  This module benefits an API for more
-flexible usage. The behaviour of the decorator_ module can easily be
-duplicated.
+This module allows to create wrapper functions that look and behave identical
+to the original function. This is particularly useful for decorators.
 
-.. _decorator: https://pypi.python.org/pypi/decorator/3.4.0
-
-For those who don't know the decorator_ module: It can be used to create
-wrappers for functions that look identical to the original - a common task
-when replacing functions via decorators.
+Part of the module replicates the functionality of the well-known decorator_
+module, but is based on creating AST nodes directly rather than composing and
+compiling strings.
 
 Furthermore, this module makes it possible to create wrappers with modified
 signatures. Currently, the only specialized function that is explicitly
@@ -50,6 +25,8 @@ dedicated to this purpose is ``partial``. If you are interested in doing
 more complex modifications you can pass a dynamically created ``Signature``
 to ``wraps``. If you make something useful, please consider contributing
 your functionality to this module.
+
+.. _decorator: https://pypi.python.org/pypi/decorator
 
 
 .wraps()
@@ -62,26 +39,33 @@ metaprogramming tools. Furthermore, it knows how to copy the signature
 exactly, even remembering object identity of default arguments and
 annotations:
 
-.. code:: python
+.. code-block:: python
 
     >>> from black_magic.decorator import wraps
 
-    >>> def real(a=[])
-    ...     return a
+    >>> def real(a=[]):
+    ...     pass
 
     >>> @wraps(real)
     ... def fake(*args, **kwargs):
     ...     return args
 
+    >>> fake()
+    ([],)
+
+    >>> fake(1)
+    (1,)
+
+    >>> fake(a=2)
+    (2,)
+
     >>> fake()[0] is real()
     True
-    >>> fake(a=1)
-    (1,)
 
 
 If you want to get real crazy you can even use ast.expr_'s:
 
-.. code:: python
+.. code-block:: python
 
     >>> import ast
     >>> fake = wraps(real)(ast.Num(n=1))
@@ -100,7 +84,7 @@ this module, make sure to read the warning below!
 
 This is similar to the ``functools.partial`` function.
 
-.. code:: python
+.. code-block:: python
 
     >>> from black_magic.decorator import partial
 
@@ -119,14 +103,14 @@ There are some differences, though:
 
 - the ``**kwargs`` are stripped first, then ``*args``
 
-  .. code:: python
+  .. code-block:: python
 
       >>> partial(lambda a,b,c: (a,b,c), 2, a=1)(3)
       (1, 2, 3)
 
 - by leaving the first argument empty ``partial`` can act as decorator:
 
-  .. code:: python
+  .. code-block:: python
 
       >>> @partial(None, 1, bar=0)
       ... def foo(bar, lum):
@@ -145,7 +129,7 @@ argument) doesn't hide parameters the same way that ``partial`` applied to
 a function does, i.e. you can move bound arguments to the right in later
 calls. In code:
 
-.. code:: python
+.. code-block:: python
 
     >>> partial(None, 1)(a=0)(lambda a, b: (a, b))()
     (0, 1)
@@ -160,7 +144,7 @@ parameters given here. In fact, ``partial = metapartial()``.
 Binding further keyword arguments via the returned function will overwrite
 keyword parameters of previous bindings with the same name.
 
-.. code:: python
+.. code-block:: python
 
     >>> @metapartial(1, a=0, c=3)
     ... def func(a, b, *args, **kwargs):
@@ -174,7 +158,7 @@ keyword parameters of previous bindings with the same name.
 
 This is the canonic utility to create decorators:
 
-.. code:: python
+.. code-block:: python
 
     >>> from black_magic.decorator import decorator
 
@@ -198,7 +182,7 @@ This is the canonic utility to create decorators:
 ``flatorator`` imitates the functionality of the well known `decorator`_
 module.
 
-.. code:: python
+.. code-block:: python
 
     >>> from black_magic.decorator import flatorator
 
@@ -223,6 +207,10 @@ A: No, it uses ugly `abstract syntax tree`_ code to do its dynamic code generati
 
 .. _abstract syntax tree: http://docs.python.org/3.3/library/ast.html?highlight=ast#ast
 
+Q: But it's still ugly code, right?
+
+A: Yes.
+
 
 WARNING: performance hits incoming
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -241,7 +229,7 @@ very unsensible handling of arguments that are bound by keyword. These, and
 all subsequent arguments, become keyword-only parameters. Consider the
 following example:
 
-.. code:: python
+.. code-block:: python
 
     >>> import functools
     >>> def func(a, b, *args, **kwargs):
@@ -259,7 +247,7 @@ For compatibility between python versions and ease of use, I chose to handle
 ``functools.partial`` objects as if you had actually used
 ``black_magic.decorator.partial`` with the same arguments, i.e.:
 
-.. code:: python
+.. code-block:: python
 
     >>> wrap = wraps(part)(part)
     >>> wrap(1, 2, c=3)
@@ -273,23 +261,30 @@ unexpected.
 Tests
 ~~~~~
 
-This module has been tested to work on python{2.6, 2.7, 3.2, 3.3} and
-PyPy1.9 using `Travis CI`_.
+This module has been tested to work on python{2.6, 2.7, 3.3, 3.4, 3.5}
+and PyPy1.9 using `Travis CI`_, and tested with python 3.2 locally.
 
 .. _Travis CI: https://travis-ci.org/
 
 
-License
-~~~~~~~
 
-To the extent possible under law, Thomas Gläßle has waived all copyright
-and related or neighboring rights to black-magic. This work is published
-from: Germany.
+.. |Tests| image:: https://api.travis-ci.org/coldfix/black-magic.svg?branch=master
+   :target: https://travis-ci.org/coldfix/black-magic
+   :alt: Tests
 
-To the extent possible under law, the person who associated CC0 with
-black-magic has waived all copyright and related or neighboring rights
-to black-magic.
+.. |Coverage| image:: https://coveralls.io/repos/coldfix/black-magic/badge.svg?branch=master
+   :target: https://coveralls.io/r/coldfix/black-magic
+   :alt: Coverage
 
-You should have received a copy of the CC0 legalcode along with this
-work. If not, see http://creativecommons.org/publicdomain/zero/1.0/.
+.. |Version| image:: http://coldfix.de:8080/v/black-magic/badge.svg
+   :target: https://pypi.python.org/pypi/black-magic/
+   :alt: Latest Version
+
+.. |Downloads| image:: http://coldfix.de:8080/d/black-magic/badge.svg
+   :target: https://pypi.python.org/pypi/black-magic/#downloads
+   :alt: Downloads
+
+.. |Unlicense| image:: http://coldfix.de:8080/license/black-magic/badge.svg
+   :target: http://unlicense.org/
+   :alt: Unlicense
 
