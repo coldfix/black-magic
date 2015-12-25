@@ -3,27 +3,6 @@ black-magic
 
 |Tests| |Coverage| |Version| |Downloads| |Unlicense|
 
-.. |Tests| image:: https://api.travis-ci.org/coldfix/black-magic.svg?branch=master
-   :target: https://travis-ci.org/coldfix/black-magic
-   :alt: Tests
-
-.. |Coverage| image:: https://coveralls.io/repos/coldfix/black-magic/badge.svg?branch=master
-   :target: https://coveralls.io/r/coldfix/black-magic
-   :alt: Coverage
-
-.. |Version| image:: http://coldfix.de:8080/v/black-magic/badge.svg
-   :target: https://pypi.python.org/pypi/black-magic/
-   :alt: Latest Version
-
-.. |Downloads| image:: http://coldfix.de:8080/d/black-magic/badge.svg
-   :target: https://pypi.python.org/pypi/black-magic/#downloads
-   :alt: Downloads
-
-.. |Unlicense| image:: http://coldfix.de:8080/license/black-magic/badge.svg
-   :target: http://unlicense.org/
-   :alt: Unlicense
-
-
 Metaprogramming modules that operate on black magic!
 
 Currently there is only one module available. However, I am all open for
@@ -277,3 +256,26 @@ This module has been tested to work on python{2.6, 2.7, 3.3, 3.4, 3.5}
 and PyPy1.9 using `Travis CI`_, and tested with python 3.2 locally.
 
 .. _Travis CI: https://travis-ci.org/
+
+
+
+.. |Tests| image:: https://api.travis-ci.org/coldfix/black-magic.svg?branch=master
+   :target: https://travis-ci.org/coldfix/black-magic
+   :alt: Tests
+
+.. |Coverage| image:: https://coveralls.io/repos/coldfix/black-magic/badge.svg?branch=master
+   :target: https://coveralls.io/r/coldfix/black-magic
+   :alt: Coverage
+
+.. |Version| image:: http://coldfix.de:8080/v/black-magic/badge.svg
+   :target: https://pypi.python.org/pypi/black-magic/
+   :alt: Latest Version
+
+.. |Downloads| image:: http://coldfix.de:8080/d/black-magic/badge.svg
+   :target: https://pypi.python.org/pypi/black-magic/#downloads
+   :alt: Downloads
+
+.. |Unlicense| image:: http://coldfix.de:8080/license/black-magic/badge.svg
+   :target: http://unlicense.org/
+   :alt: Unlicense
+
