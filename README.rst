@@ -12,16 +12,12 @@ cool ideas.
 black_magic.decorator
 ~~~~~~~~~~~~~~~~~~~~~
 
-This is intended to become a more modern and flexible replacement for the
-the well known decorator_ module.  This module benefits an API for more
-flexible usage. The behaviour of the decorator_ module can easily be
-duplicated.
+This module allows to create wrapper functions that look and behave identical
+to the original function. This is particularly useful for decorators.
 
-.. _decorator: https://pypi.python.org/pypi/decorator/3.4.0
-
-For those who don't know the decorator_ module: It can be used to create
-wrappers for functions that look identical to the original - a common task
-when replacing functions via decorators.
+Part of the module replicates the functionality of the well-known decorator_
+module, but is based on creating AST nodes directly rather than composing and
+compiling strings.
 
 Furthermore, this module makes it possible to create wrappers with modified
 signatures. Currently, the only specialized function that is explicitly
@@ -29,6 +25,8 @@ dedicated to this purpose is ``partial``. If you are interested in doing
 more complex modifications you can pass a dynamically created ``Signature``
 to ``wraps``. If you make something useful, please consider contributing
 your functionality to this module.
+
+.. _decorator: https://pypi.python.org/pypi/decorator
 
 
 .wraps()
@@ -45,17 +43,24 @@ annotations:
 
     >>> from black_magic.decorator import wraps
 
-    >>> def real(a=[])
-    ...     return a
+    >>> def real(a=[]):
+    ...     pass
 
     >>> @wraps(real)
     ... def fake(*args, **kwargs):
     ...     return args
 
+    >>> fake()
+    ([],)
+
+    >>> fake(1)
+    (1,)
+
+    >>> fake(a=2)
+    (2,)
+
     >>> fake()[0] is real()
     True
-    >>> fake(a=1)
-    (1,)
 
 
 If you want to get real crazy you can even use ast.expr_'s:
@@ -201,6 +206,10 @@ Q: This uses ugly ``str`` concat and ``eval`` code, right?
 A: No, it uses ugly `abstract syntax tree`_ code to do its dynamic code generation.
 
 .. _abstract syntax tree: http://docs.python.org/3.3/library/ast.html?highlight=ast#ast
+
+Q: But it's still ugly code, right?
+
+A: Yes.
 
 
 WARNING: performance hits incoming
