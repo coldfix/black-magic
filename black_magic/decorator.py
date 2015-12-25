@@ -126,6 +126,7 @@ class ASTorator(object):
         for name, param in self.signature.parameters.items():
 
             context[name] = param
+            ast_name = ast.Name(id=name, ctx=ast.Load(), lineno=1, col_offset=0)
 
             # positional parameters
             if param.kind == param.POSITIONAL_OR_KEYWORD:
@@ -133,8 +134,7 @@ class ASTorator(object):
                     lineno=1, col_offset=0,
                     arg=name,
                     annotation=attr(param, 'annotation')))
-                call.args.append(ast.Name(id=name, ctx=ast.Load(),
-                                          lineno=1, col_offset=0))
+                call.args.append(ast_name)
                 if _hasattr(param, 'default'):
                     sig.defaults.append(attr(param, 'default'))
 
@@ -146,23 +146,20 @@ class ASTorator(object):
                     annotation=attr(param, 'annotation')))
                 call.keywords.append(ast.keyword(
                     arg=name,
-                    value=ast.Name(id=name, ctx=ast.Load(),
-                                   lineno=1, col_offset=0)))
+                    value=ast_name))
                 sig.kw_defaults.append(attr(param, 'default'))
 
             # varargs
             elif param.kind == param.VAR_POSITIONAL:
                 compat.ast_set_special_arg('vararg', sig,
                                            name, attr(param, 'annotation'))
-                call.starargs = ast.Name(id=name, ctx=ast.Load(),
-                                         lineno=1, col_offset=0)
+                compat.ast_call_unpack_stararg(call, ast_name)
 
             # kwargs
             elif param.kind == param.VAR_KEYWORD:
                 compat.ast_set_special_arg('kwarg', sig,
                                            name, attr(param, 'annotation'))
-                call.kwargs = ast.Name(id=name, ctx=ast.Load(),
-                                       lineno=1, col_offset=0)
+                compat.ast_call_unpack_kwarg(call, ast_name)
 
             else:
                 raise ValueError("Cannot handle parameter type: %s" % param)
