@@ -6,11 +6,14 @@ try:
 except NameError:
     xrange = range
 
+
 def func(a, b, c, *args, **kwargs):
     return (a, b, c, args, kwargs)
 
+
 def wrap(fn, *args, **kwargs):
     return fn(*args, **kwargs)
+
 
 def timeit(fn, number):
     start = default_timer()
@@ -18,7 +21,9 @@ def timeit(fn, number):
         fn()
     return default_timer() - start
 
+
 class Base(object):
+
     def __call__(self, *args, **kwargs):
         self.func(0, 1, 2, 3, e=5)
 
@@ -27,6 +32,7 @@ class Base(object):
         init = timeit(cls, number=number)
         call = timeit(cls(), number=number)
         return (init, call)
+
 
 def main(*classes):
     for cls in classes:

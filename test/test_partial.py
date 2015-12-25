@@ -2,13 +2,17 @@
 """
 Python2 compatible unit tests for black_magic.decorator.partial
 """
-__all__ = ['TestPartial']
 
 import unittest
 import functools
 from test._common import _TestBase
 
 from black_magic.decorator import wraps, partial
+
+__all__ = [
+    'TestPartial',
+]
+
 
 class TestPartial(unittest.TestCase, _TestBase):
 

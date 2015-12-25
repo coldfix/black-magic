@@ -2,19 +2,24 @@
 """
 Python3 unit tests for black_magic.decorator
 """
-__all__ = ['TestASToratorPy3']
 
 import unittest
 from test._common import _TestUtil, hd
 
+__all__ = [
+    'TestASToratorPy3',
+]
+
+
 class TestASToratorPy3(unittest.TestCase, _TestUtil):
+
     """
     Python3 only tests for black_magic.decorator.wraps (uses AST).
 
     Contains checks for annotations object identity and keyword-only
     arguments.
-
     """
+
     def test_annotations_identity(self):
         """Check that annatotions object identity is preserved."""
         _a, _b, _c, _d, _va, _kw, _return = [], [], [], [], [], [], []
@@ -61,5 +66,3 @@ class TestASToratorPy3(unittest.TestCase, _TestUtil):
         self.must_fail(a=0)
         self.must_fail(0, 4)
         self.must_fail(0, 4, b=1)
-
-

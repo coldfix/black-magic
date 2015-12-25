@@ -2,7 +2,6 @@
 """
 Python2 compatible unit tests for black_magic.decorator
 """
-__all__ = ['TestASTorator']
 
 import unittest
 import functools
@@ -10,14 +9,20 @@ from test._common import hd, _TestUtil
 
 from black_magic.decorator import wraps, partial
 
+__all__ = [
+    'TestASTorator',
+]
+
+
 class TestASTorator(unittest.TestCase, _TestUtil):
+
     """
     Unit tests for the wraps function (uses ASTorator).
 
     Contains only python2 compatible tests, which means no keyword-only
     arguments, no annotations.
-
     """
+
     def test_without_arguments(self):
         """Test function without arguments."""
         def real():

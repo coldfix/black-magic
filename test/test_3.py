@@ -1,6 +1,7 @@
-'''
+"""
 Tests that are syntactically impossible on python2.
-'''
+"""
+
 import sys
 
 try:
