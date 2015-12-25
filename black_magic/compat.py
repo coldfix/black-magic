@@ -16,6 +16,7 @@ __all__ = ['signature', 'Signature',
 
 
 import sys
+import ast
 
 
 # Python2 has no annotations and kwonly arguments, therefore we need to
@@ -54,7 +55,6 @@ except ImportError:
 try:
     from ast import arg as ast_arg
 except ImportError:
-    import ast
     def ast_arg(arg, annotation, **kwargs):
         return ast.Name(id=arg, ctx=ast.Param(), **kwargs)
 
@@ -62,11 +62,32 @@ except ImportError:
 # Python3.4 uses an ast.arg for ast.arguments.kwarg(annotation).
 if sys.version_info >= (3, 4):
     def ast_set_special_arg(kind, arguments, name, annotation):
-        setattr(arguments, kind, ast_arg(arg=name, annotation=annotation))
+        setattr(arguments, kind,
+                ast_arg(arg=name, annotation=annotation,
+                        lineno=1, col_offset=0))
 else:
     def ast_set_special_arg(kind, arguments, name, annotation):
         setattr(arguments, kind, name)
         setattr(arguments, kind + 'annotation', annotation)
+
+
+if sys.version_info >= (3, 5):
+    def ast_call_unpack_stararg(call, name):
+        call.args.append(ast.Starred(value=name, ctx=ast.Load(),
+                                     lineno=1, col_offset=0))
+
+    def ast_call_unpack_kwarg(call, name):
+        call.keywords.append(ast.keyword(arg=None, value=name,
+                                         lineno=1, col_offset=0))
+
+
+else:
+    def ast_call_unpack_stararg(call, name):
+        call.starargs = name
+
+    def ast_call_unpack_kwarg(call, name):
+        call.kwargs = name
+
 
 
 def exec_compat(expression, globals, locals=None):
