@@ -1,6 +1,13 @@
 Changelog
 ~~~~~~~~~
 
+0.0.12
+------
+Date: 26.12.2015
+
+- fix missing UNLICENSE file in source distribution
+- some internal maintenance
+
 0.0.11
 ------
 Date: 25.12.2015
