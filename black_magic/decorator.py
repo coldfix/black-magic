@@ -356,6 +356,7 @@ class Value(object):
         return ast.Name(id=value_name, ctx=ast.Load(),
                         lineno=1, col_offset=0)
 
+
 def value(val):
     """
     Return a 'callback' value for use with decorate.

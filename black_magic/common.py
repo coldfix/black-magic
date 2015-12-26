@@ -14,19 +14,19 @@ def param_names(argspec):
         for argname in argspec.varkw:
             yield argname
 
+
 class Scope:
+
     """
     Keeps track of used names in a particular scope.
     """
+
     def __init__(self, iterable):
         self.names = set(iterable)
 
-    """
-    Generate a new name that is not present in the scope.
-    """
     def reserve(self, name):
+        """Generate a new name that is not present in the scope."""
         while name in self.names:
             name += '_'
         self.names.add(name)
         return name
-

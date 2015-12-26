@@ -7,12 +7,14 @@ both languages.
 """
 
 
-__all__ = ['signature', 'Signature',
-           'getfullargspec', 'FullArgSpec',
-           'ast_arg',
-           'ast_set_special_arg',
-           'exec_compat',
-           'is_identifier']
+__all__ = [
+    'signature', 'Signature',
+    'getfullargspec', 'FullArgSpec',
+    'ast_arg',
+    'ast_set_special_arg',
+    'exec_compat',
+    'is_identifier',
+]
 
 
 import sys
