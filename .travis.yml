@@ -6,7 +6,11 @@ python:
   - "3.3"
   - "3.4"
   - "3.5"
+  - "3.6"
+  - "3.7-dev"
+  - "nightly"
   - "pypy"
+  - "pypy3"
 install:
   - pip install coveralls nose
   - python setup.py sdist
