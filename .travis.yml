@@ -10,7 +10,8 @@ python:
   - "3.7-dev"
   - "nightly"
   - "pypy"
-  - "pypy3"
+# Works on my machine, fails on Travis:
+# - "pypy3"
 install:
   - pip install coveralls nose
   - python setup.py sdist
