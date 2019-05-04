@@ -1,5 +1,4 @@
 language: python
-sudo: false
 python:
 # - "2.6"       # support removed on travis
   - "2.7"
@@ -16,12 +15,11 @@ matrix:
   include:
     - python: "3.7"
       dist: xenial
-      sudo: true
 
 install:
   - pip install coveralls nose
   - python setup.py sdist
-  - pip install $(ls ./dist/*.tar.gz | sort -rV | head -n1)
+  - pip install ./dist/*.tar.gz
 script:
   - coverage run --source=black_magic setup.py nosetests --with-doctest --exclude=benchmark
 after_success:
